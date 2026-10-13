@@ -22,6 +22,6 @@ struct StudentRegisterModel {
         var acceptedTerms: Bool = false
 
     var isComplete: Bool {
-        !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !phone.isEmpty && !university.isEmpty && !faculty.isEmpty && !speciality.isEmpty && !groupNumber.isEmpty && !studyYears.isEmpty && !password.isEmpty && password == confirmPassword && acceptedTerms
+        !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !phone.isEmpty && !university.isEmpty && !faculty.isEmpty && !speciality.isEmpty && !groupNumber.isEmpty && !studyYears.isEmpty && (password.isEmpty || password == confirmPassword) && acceptedTerms
     }
 }
