@@ -136,11 +136,14 @@ final class StudentRegisterViewController: UIViewController {
     }()
 
     private var didNavigate = false
+    private var isCompletingAuthenticatedProfile = false
+    private var isSubmitting = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         setupView()
+        configureForAuthenticatedProfile()
         setupConstraints()
         setupValidators()
         setupActions()
@@ -312,13 +315,16 @@ final class StudentRegisterViewController: UIViewController {
     }
 
     private func handleRegisterTap() {
+        guard !isSubmitting else { return }
+        isCompletingAuthenticatedProfile = FirebaseAuthService.shared.currentUser != nil
+
         let isFirstNameValid = firstNameField.validate()
         let isLastNameValid = lastNameField.validate()
         let isEmailValid = emailField.validate()
         let isPhoneValid = phoneField.validate()
         let isGroupNumberValid = groupNumberField.validate()
-        let isPasswordValid = passwordField.validate()
-        let isConfirmPasswordValid = confirmPasswordField.validate()
+        let isPasswordValid = isCompletingAuthenticatedProfile || passwordField.validate()
+        let isConfirmPasswordValid = isCompletingAuthenticatedProfile || confirmPasswordField.validate()
 
         let isUniversityValid = universityField.isValidValue
         let isFacultyValid = facultyField.isValidValue
@@ -350,18 +356,49 @@ final class StudentRegisterViewController: UIViewController {
         model.speciality = specialityField.selectedValue ?? ""
         model.groupNumber = groupNumberField.value
         model.studyYears = studyYearsField.selectedValue ?? ""
-        model.password = passwordField.value
-        model.confirmPassword = confirmPasswordField.value
+        model.password = isCompletingAuthenticatedProfile ? "" : passwordField.value
+        model.confirmPassword = isCompletingAuthenticatedProfile ? "" : confirmPasswordField.value
         model.acceptedTerms = termsView.isChecked
 
         guard model.isComplete else { return }
         
-        UserSession.shared.studentData = model
-        UserSession.shared.currentRole = .student
-        
-        guard !didNavigate else { return }
-        didNavigate = true
-        AppRouter.shared.push(.studentMainTabBar)
+        isSubmitting = true
+        FirebaseAuthService.shared.register(
+            email: model.email,
+            password: model.password,
+            profileFields: FirebaseAuthService.shared.profileFields(for: model)
+        ) { [weak self] result in
+            guard let self else { return }
+            self.isSubmitting = false
+            switch result {
+            case .success:
+                UserSession.shared.studentData = model
+                UserSession.shared.supervisorData = nil
+                UserSession.shared.currentRole = .student
+                guard !self.didNavigate else { return }
+                self.didNavigate = true
+                AppRouter.shared.setRoot(.studentMainTabBar, in: self.view.window)
+            case .failure(let error):
+                self.presentAuthError(error)
+            }
+        }
+    }
+
+    private func configureForAuthenticatedProfile() {
+        guard let user = FirebaseAuthService.shared.currentUser else { return }
+        isCompletingAuthenticatedProfile = true
+        passwordField.isHidden = true
+        confirmPasswordField.isHidden = true
+        emailField.textField.text = user.email
+        emailField.textField.isEnabled = false
+
+        let nameParts = (user.displayName ?? "").split(maxSplits: 1, omittingEmptySubsequences: true, whereSeparator: { $0.isWhitespace })
+        if let firstName = nameParts.first {
+            firstNameField.textField.text = String(firstName)
+        }
+        if nameParts.count > 1 {
+            lastNameField.textField.text = String(nameParts[1])
+        }
     }
 
     private func showTermsAlert() {

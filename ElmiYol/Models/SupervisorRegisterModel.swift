@@ -23,6 +23,6 @@ struct SupervisorRegisterModel {
     var isComplete: Bool {
         !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !phone.isEmpty &&
         !workplace.isEmpty && !position.isEmpty && !academicDegree.isEmpty && !specialityField.isEmpty &&
-        !password.isEmpty && password == confirmPassword && acceptedTerms
+        (password.isEmpty || password == confirmPassword) && acceptedTerms
     }
 }
