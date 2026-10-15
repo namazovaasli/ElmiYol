@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import GoogleSignIn
 
 extension UIViewController {
 
@@ -23,12 +24,14 @@ extension UIViewController {
     }
 
     func performLogout() {
+        do {
+            try FirebaseAuthService.shared.signOut()
+            GIDSignIn.sharedInstance.signOut()
+        } catch {
+            presentAuthError(error)
+            return
+        }
         UserSession.shared.logout()
-
-        guard let window = view.window ?? Self.activeKeyWindow else { return }
-
-        window.rootViewController?.dismiss(animated: false)
-        AppRouter.shared.setRoot(.roleSelection, in: window)
     }
 
     func handleProfileSettingsRowTap(_ title: String) {
@@ -50,12 +53,5 @@ extension UIViewController {
         default:
             break
         }
-    }
-
-    private static var activeKeyWindow: UIWindow? {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap { $0.windows }
-            .first { $0.isKeyWindow }
     }
 }

@@ -21,6 +21,8 @@ final class MainTabBarController: UITabBarController {
         super.viewDidLoad()
         setupTabs()
         setupAppearance()
+        delegate = self
+        AppRouter.shared.navigationController = selectedViewController as? UINavigationController
     }
 
     private func setupTabs() {
@@ -118,5 +120,11 @@ extension MainTabBarController: SideMenuViewControllerDelegate {
 
     func sideMenuDidSelectLogout(_ menu: SideMenuViewController) {
         presentLogoutConfirmation()
+    }
+}
+
+extension MainTabBarController: UITabBarControllerDelegate {
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        AppRouter.shared.navigationController = viewController as? UINavigationController
     }
 }
