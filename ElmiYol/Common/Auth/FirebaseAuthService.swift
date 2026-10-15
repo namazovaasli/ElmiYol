@@ -35,7 +35,7 @@ struct FirebaseUserProfile {
     func applyToSession() {
         let session = UserSession.shared
         switch role {
-        case .student:
+        case .some(.student):
             var model = StudentRegisterModel()
             model.firstName = value("firstName")
             model.lastName = value("lastName")
@@ -50,7 +50,7 @@ struct FirebaseUserProfile {
             session.studentData = model
             session.supervisorData = nil
             session.currentRole = .student
-        case .supervisor:
+        case .some(.supervisor):
             var model = SupervisorRegisterModel()
             model.firstName = value("firstName")
             model.lastName = value("lastName")
@@ -101,7 +101,8 @@ final class FirebaseAuthService {
         }
 
         if let user = Auth.auth().currentUser {
-            guard user.email?.caseInsensitiveCompare(email) == .orderedSame else {
+            guard let currentEmail = user.email,
+                  currentEmail.caseInsensitiveCompare(email) == .orderedSame else {
                 completion(.failure(FirebaseAuthServiceError.emailDoesNotMatchCurrentAccount))
                 return
             }

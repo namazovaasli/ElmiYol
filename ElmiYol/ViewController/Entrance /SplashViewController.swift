@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import FirebaseAuth
 
 final class SplashViewController: UIViewController {
 
@@ -230,6 +231,13 @@ final class SplashViewController: UIViewController {
     }
 
     private func goToNextScreen() {
+        if let user = FirebaseAuthService.shared.currentUser,
+           let window = view.window {
+            AuthCoordinator.route(user: user, in: window) { [weak self] error in
+                self?.presentAuthError(error)
+            }
+            return
+        }
         let onboardingVC = OnboardingFirstViewController()
         navigationController?.pushViewControllerWithFade(onboardingVC)
     }

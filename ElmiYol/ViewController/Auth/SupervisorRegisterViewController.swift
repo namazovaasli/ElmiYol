@@ -7,6 +7,8 @@
 
 import UIKit
 import SnapKit
+import FirebaseAuth
+import FirebaseAuth
 
 final class SupervisorRegisterViewController: UIViewController {
 
@@ -359,7 +361,10 @@ final class SupervisorRegisterViewController: UIViewController {
             self.isSubmitting = false
             switch result {
             case .success:
-                UserSession.shared.supervisorData = model
+                var signedInModel = model
+                signedInModel.password = ""
+                signedInModel.confirmPassword = ""
+                UserSession.shared.supervisorData = signedInModel
                 UserSession.shared.studentData = nil
                 UserSession.shared.currentRole = .supervisor
                 guard !self.didNavigate else { return }

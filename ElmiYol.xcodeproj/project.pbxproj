@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		319EF8D03002BFB700CE4CD5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 319EF8CF3002BFB700CE4CD5 /* SnapKit */; };
+		A10000000000000000000021 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000011 /* FirebaseCore */; };
+		A10000000000000000000022 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000012 /* FirebaseAuth */; };
+		A10000000000000000000023 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000013 /* FirebaseFirestore */; };
+		A10000000000000000000024 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000014 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +45,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				319EF8D03002BFB700CE4CD5 /* SnapKit in Frameworks */,
+				A10000000000000000000021 /* FirebaseCore in Frameworks */,
+				A10000000000000000000022 /* FirebaseAuth in Frameworks */,
+				A10000000000000000000023 /* FirebaseFirestore in Frameworks */,
+				A10000000000000000000024 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +92,10 @@
 			name = ElmiYol;
 			packageProductDependencies = (
 				319EF8CF3002BFB700CE4CD5 /* SnapKit */,
+				A10000000000000000000011 /* FirebaseCore */,
+				A10000000000000000000012 /* FirebaseAuth */,
+				A10000000000000000000013 /* FirebaseFirestore */,
+				A10000000000000000000014 /* GoogleSignIn */,
 			);
 			productName = ElmiYol;
 			productReference = 310B04593001711400808AB9 /* ElmiYol.app */;
@@ -101,6 +113,11 @@
 				TargetAttributes = {
 					310B04583001711400808AB9 = {
 						CreatedOnToolsVersion = 26.6;
+						SystemCapabilities = {
+							com.apple.SignInWithApple = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -115,6 +132,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				319EF8CE3002BFB700CE4CD5 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				A10000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				A10000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 310B045A3001711400808AB9 /* Products */;
@@ -152,6 +171,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ElmiYol.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -165,6 +185,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.aslinamazova.ElmiYol;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -182,6 +206,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ElmiYol.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -195,6 +220,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.aslinamazova.ElmiYol;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -358,6 +387,22 @@
 				minimumVersion = 6.0.0;
 			};
 		};
+		A10000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+		A10000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -365,6 +410,26 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 319EF8CE3002BFB700CE4CD5 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		A10000000000000000000011 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		A10000000000000000000012 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		A10000000000000000000013 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		A10000000000000000000014 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

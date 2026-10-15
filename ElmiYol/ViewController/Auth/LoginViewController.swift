@@ -7,8 +7,14 @@
  
 import UIKit
 import SnapKit
+import AuthenticationServices
+import CryptoKit
+import FirebaseAuth
+import FirebaseCore
+import GoogleSignIn
+import Security
 
-final class LoginViewController: UIViewController {
+final class LoginViewController: UIViewController, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
 
     private let backButton: UIButton = {
         let button = UIButton(type: .system)
@@ -138,8 +144,10 @@ final class LoginViewController: UIViewController {
 
     private let appleButton = SocialLoginButton(imageName: "apple_icon", title: "Apple ilə")
     private let googleButton = SocialLoginButton(imageName: "google_icon", title: "Google ilə")
-    private let emailCodeButton = SocialLoginButton(imageName: "envelope", title: "E-poçt ilə kod")
+    private let emailCodeButton = SocialLoginButton(imageName: "envelope", title: "E-poçt linki")
     private var didNavigate = false
+    private var isSubmitting = false
+    private var currentAppleNonce: String?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -305,15 +313,77 @@ final class LoginViewController: UIViewController {
     }
     
     private func handleAppleLogin() {
+        guard FirebaseAuthService.shared.isConfigured else {
+            presentAuthError(FirebaseAuthServiceError.firebaseNotConfigured)
+            return
+        }
+        guard let nonce = randomNonceString() else {
+            presentAuthMessage("Təhlükəsiz giriş sorğusu yaratmaq mümkün olmadı.", title: "Xəta")
+            return
+        }
+        currentAppleNonce = nonce
 
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName, .email]
+        request.nonce = sha256(nonce)
+
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
     }
 
     private func handleGoogleLogin() {
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            presentAuthError(FirebaseAuthServiceError.firebaseNotConfigured)
+            return
+        }
+        GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.signIn(withPresenting: self) { [weak self] result, error in
+            guard let self else { return }
+            if let error {
+                self.presentAuthError(error)
+                return
+            }
+            guard let user = result?.user, let idToken = user.idToken?.tokenString else {
+                self.presentAuthMessage("Google hesabından giriş məlumatları alınmadı.", title: "Xəta")
+                return
+            }
 
+            let credential = GoogleAuthProvider.credential(
+                withIDToken: idToken,
+                accessToken: user.accessToken.tokenString
+            )
+            self.signIn(with: credential)
+        }
     }
 
     private func handleEmailCodeLogin() {
-
+        let alert = UIAlertController(title: "E-poçt ilə giriş", message: "Giriş bağlantısını göndərmək üçün e-poçt ünvanınızı daxil edin.", preferredStyle: .alert)
+        alert.addTextField { [weak self] field in
+            field.keyboardType = .emailAddress
+            field.autocapitalizationType = .none
+            field.autocorrectionType = .no
+            field.text = self?.emailField.value
+            field.placeholder = "example@mail.com"
+        }
+        alert.addAction(UIAlertAction(title: "Ləğv et", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Bağlantı göndər", style: .default) { [weak self, weak alert] _ in
+            guard let self, let email = alert?.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !email.isEmpty else {
+                self?.presentAuthMessage("E-poçt ünvanınızı daxil edin.")
+                return
+            }
+            FirebaseAuthService.shared.sendEmailSignInLink(to: email) { [weak self] error in
+                guard let self else { return }
+                if let error {
+                    self.presentAuthError(error)
+                } else {
+                    self.presentAuthMessage("Giriş bağlantısı e-poçt ünvanınıza göndərildi. Bağlantını bu cihazda açın.")
+                }
+            }
+        })
+        present(alert, animated: true)
     }
     
     private func handleBackTap() {
@@ -329,14 +399,105 @@ final class LoginViewController: UIViewController {
     }
 
     private func handleLoginTap() {
+        guard !isSubmitting else { return }
         let isEmailValid = emailField.validate()
         let isPasswordValid = passwordField.validate()
 
         guard isEmailValid, isPasswordValid else { return }
-      
+        isSubmitting = true
+        FirebaseAuthService.shared.signIn(email: emailField.value, password: passwordField.value) { [weak self] result in
+            guard let self else { return }
+            self.isSubmitting = false
+            switch result {
+            case .success(let user):
+                self.routeAuthenticatedUser(user)
+            case .failure(let error):
+                self.presentAuthError(error)
+            }
+        }
     }
 
     private func handleForgotPassword() {
-       
+        let email = emailField.value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard emailField.validate(), !email.isEmpty else {
+            presentAuthMessage("Şifrəni sıfırlamaq üçün əvvəlcə e-poçt ünvanınızı daxil edin.")
+            return
+        }
+        FirebaseAuthService.shared.sendPasswordReset(to: email) { [weak self] error in
+            guard let self else { return }
+            if let error {
+                self.presentAuthError(error)
+            } else {
+                self.presentAuthMessage("Şifrəni yeniləmək üçün təlimat e-poçtunuza göndərildi.")
+            }
+        }
+    }
+
+    private func signIn(with credential: AuthCredential) {
+        guard !isSubmitting else { return }
+        isSubmitting = true
+        FirebaseAuthService.shared.signIn(with: credential) { [weak self] result in
+            guard let self else { return }
+            self.isSubmitting = false
+            switch result {
+            case .success(let user):
+                self.routeAuthenticatedUser(user)
+            case .failure(let error):
+                self.presentAuthError(error)
+            }
+        }
+    }
+
+    private func routeAuthenticatedUser(_ user: User) {
+        guard let window = view.window else {
+            presentAuthMessage("Tətbiq pəncərəsi tapılmadı. Yenidən cəhd edin.", title: "Xəta")
+            return
+        }
+        AuthCoordinator.route(user: user, in: window) { [weak self] error in
+            self?.presentAuthError(error)
+        }
+    }
+
+    private func randomNonceString(length: Int = 32) -> String? {
+        let charset = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        guard SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes) == errSecSuccess else {
+            return nil
+        }
+        return randomBytes.map { charset[Int($0) % charset.count] }.reduce(into: "") { $0.append($1) }
+    }
+
+    private func sha256(_ value: String) -> String {
+        SHA256.hash(data: Data(value.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        guard let appleCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+              let nonce = currentAppleNonce,
+              let tokenData = appleCredential.identityToken,
+              let idToken = String(data: tokenData, encoding: .utf8) else {
+            presentAuthMessage("Apple hesabından giriş məlumatları alınmadı.", title: "Xəta")
+            return
+        }
+
+        let credential = OAuthProvider.appleCredential(
+            withIDToken: idToken,
+            rawNonce: nonce,
+            fullName: appleCredential.fullName
+        )
+        currentAppleNonce = nil
+        signIn(with: credential)
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        currentAppleNonce = nil
+        if let appleError = error as? ASAuthorizationError, appleError.code == .canceled {
+            return
+        }
+        presentAuthError(error)
+    }
+
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        view.window ?? UIWindow()
     }
 }
