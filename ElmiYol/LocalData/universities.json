@@ -1,0 +1,1660 @@
+[
+  {
+    "id": "bdu",
+    "name": "Bakı Dövlət Universiteti",
+    "faculties": [
+      {
+        "id": "mexanika-riyaziyyat",
+        "name": "Mexanika-riyaziyyat",
+        "specialities": [
+          "Mexanika",
+          "Riyaziyyat",
+          "Riyaziyyat müəllimliyi"
+        ]
+      },
+      {
+        "id": "tetbiqi-riyaziyyat-ve-kibernetika",
+        "name": "Tətbiqi riyaziyyat və kibernetika",
+        "specialities": [
+          "Kompüter elmləri",
+          "İnformatika (rəqəmsal bacarıqlar) müəllimliyi",
+          "İnformasiya təhlükəsizliyi"
+        ]
+      },
+      {
+        "id": "fizika",
+        "name": "Fizika",
+        "specialities": [
+          "Fizika",
+          "Fizika müəllimliyi",
+          "Mühəndis fizikası"
+        ]
+      },
+      {
+        "id": "kimya",
+        "name": "Kimya",
+        "specialities": [
+          "Kimya",
+          "Kimya müəllimliyi",
+          "Kimya mühəndisliyi",
+          "Qida mühəndisliyi"
+        ]
+      },
+      {
+        "id": "biologiya",
+        "name": "Biologiya",
+        "specialities": [
+          "Biologiya",
+          "Biologiya müəllimliyi",
+          "Biotexnologiya"
+        ]
+      },
+      {
+        "id": "ekologiya-ve-torpaqsunasliq",
+        "name": "Ekologiya və torpaqşünaslıq",
+        "specialities": [
+          "Ekologiya",
+          "Bitki mühafizəsi",
+          "Su bioehtiyatları və akvabitkilər",
+          "Torpaqşünaslıq və aqrokimya",
+          "Yer quruluşu, torpaq və şəhər kadastrı"
+        ]
+      },
+      {
+        "id": "cografiya",
+        "name": "Coğrafiya",
+        "specialities": [
+          "Coğrafiya",
+          "Coğrafiya müəllimliyi",
+          "Hidrometeorologiya",
+          "Geomatika və geodeziya mühəndisliyi",
+          "Turizm işinin təşkili"
+        ]
+      },
+      {
+        "id": "geologiya",
+        "name": "Geologiya",
+        "specialities": [
+          "Geologiya",
+          "Geologiya və geofizika mühəndisliyi",
+          "Mədən mühəndisliyi",
+          "Meliorasiya mühəndisliyi"
+        ]
+      },
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "Azərbaycan dili və ədəbiyyatı müəllimliyi",
+          "Dil və ədəbiyyat müəllimliyi (rus dili və ədəbiyyatı üzrə)",
+          "Filologiya: alman dili və ədəbiyyatı",
+          "Filologiya: Azərbaycan dili və ədəbiyyatı",
+          "Filologiya: çin dili və ədəbiyyatı",
+          "Filologiya: ərəb dili və ədəbiyyatı",
+          "Filologiya: fars dili və ədəbiyyatı",
+          "Filologiya: fransız dili və ədəbiyyatı",
+          "Filologiya: ingilis dili və ədəbiyyatı",
+          "Filologiya: rus dili və ədəbiyyatı",
+          "Filologiya: türk dili və ədəbiyyatı"
+        ]
+      },
+      {
+        "id": "tarix",
+        "name": "Tarix",
+        "specialities": [
+          "Tarix",
+          "Tarix müəllimliyi",
+          "Muzey, arxiv işi və abidələrin qorunması",
+          "Regionşünaslıq (Afrika üzrə)"
+        ]
+      },
+      {
+        "id": "beynelxalq-munasibetler-ve-iqtisadiyyat",
+        "name": "Beynəlxalq münasibətlər və iqtisadiyyat",
+        "specialities": [
+          "Beynəlxalq münasibətlər",
+          "Beynəlxalq ticarət və logistika",
+          "Dövlət və ictimai münasibətlər",
+          "Davamlı inkişafın idarə edilməsi",
+          "İqtisadiyyat",
+          "Biznesin idarə edilməsi",
+          "Maliyyə",
+          "Menecment",
+          "Statistika",
+          "Politologiya",
+          "Regionşünaslıq (Amerika üzrə)",
+          "Regionşünaslıq (Qafqaz üzrə)"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      },
+      {
+        "id": "jurnalistika",
+        "name": "Jurnalistika",
+        "specialities": [
+          "Jurnalistika"
+        ]
+      },
+      {
+        "id": "kitabxanaciliq-informasiya",
+        "name": "Kitabxanaçılıq-informasiya",
+        "specialities": [
+          "Kitabxanaçılıq və informasiya"
+        ]
+      },
+      {
+        "id": "serqsunasliq",
+        "name": "Şərqşünaslıq",
+        "specialities": [
+          "Regionşünaslıq (Çin üzrə)",
+          "Regionşünaslıq (Ərəb ölkələri üzrə)",
+          "Regionşünaslıq (İran üzrə)",
+          "Regionşünaslıq (İsrail üzrə)",
+          "Regionşünaslıq (Koreya üzrə)",
+          "Regionşünaslıq (Pakistan üzrə)",
+          "Regionşünaslıq (Türkiyə üzrə)",
+          "Regionşünaslıq (Yaponiya üzrə)",
+          "Tərcümə (ərəb dili üzrə)",
+          "Tərcümə (fars dili üzrə)"
+        ]
+      },
+      {
+        "id": "sosial-elmler-ve-psixologiya",
+        "name": "Sosial elmlər və psixologiya",
+        "specialities": [
+          "Fəlsəfə",
+          "Psixologiya",
+          "Sosial iş",
+          "Sosiologiya",
+          "Təhsildə sosial-psixoloji xidmət",
+          "Korreksiyaedici təlim"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ada",
+    "name": "ADA Universiteti",
+    "faculties": [
+      {
+        "id": "ictimai-ve-beynelxalq-munasibetler-mektebi",
+        "name": "İctimai və beynəlxalq münasibətlər məktəbi",
+        "specialities": [
+          "Beynəlxalq tədqiqatlar",
+          "Kommunikasiya və rəqəmsal media",
+          "İctimai işlər"
+        ]
+      },
+      {
+        "id": "biznes-mektebi",
+        "name": "Biznes məktəbi",
+        "specialities": [
+          "Biznesin idarə edilməsi",
+          "İqtisadiyyat",
+          "Maliyyə"
+        ]
+      },
+      {
+        "id": "informasiya-texnologiyalari-ve-muhendislik-mektebi",
+        "name": "İnformasiya texnologiyaları və mühəndislik məktəbi",
+        "specialities": [
+          "Kompüter elmləri",
+          "Kompüter mühəndisliyi",
+          "İnformasiya texnologiyaları",
+          "Riyaziyyat",
+          "Elektrik və elektronika mühəndisliyi"
+        ]
+      },
+      {
+        "id": "huquq-mektebi",
+        "name": "Hüquq məktəbi",
+        "specialities": [
+          "Hüquq (Legum Baccalaureus)"
+        ]
+      },
+      {
+        "id": "kend-teserrufati-ve-qida-elmleri-mektebi",
+        "name": "Kənd təsərrüfatı və qida elmləri məktəbi",
+        "specialities": [
+          "Aqrar texnologiyalar",
+          "Qida texnologiyaları",
+          "Heyvandarlıq"
+        ]
+      },
+      {
+        "id": "dizayn-ve-memarliq-mektebi",
+        "name": "Dizayn və memarlıq məktəbi",
+        "specialities": [
+          "Memarlıq",
+          "İnteryer dizaynı",
+          "Şəhərsalma",
+          "Kommunikasiya dizaynı"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "adnsu",
+    "name": "Azərbaycan Dövlət Neft və Sənaye Universiteti",
+    "faculties": [
+      {
+        "id": "neft-mexanika",
+        "name": "Neft-mexanika",
+        "specialities": [
+          "Mexanika mühəndisliyi",
+          "Maşınqayırma mühəndisliyi",
+          "Nəqliyyat mühəndisliyi"
+        ]
+      },
+      {
+        "id": "neft-ve-qaz",
+        "name": "Neft və qaz",
+        "specialities": [
+          "Neft-qaz mühəndisliyi",
+          "Quyuların qazılması mühəndisliyi",
+          "Texnoloji maşınlar və avadanlıqlar"
+        ]
+      },
+      {
+        "id": "kimya-texnologiya",
+        "name": "Kimya-texnologiya",
+        "specialities": [
+          "Kimya mühəndisliyi",
+          "Ekologiya mühəndisliyi",
+          "Material mühəndisliyi"
+        ]
+      },
+      {
+        "id": "energetika-ve-avtomatika",
+        "name": "Energetika və avtomatika",
+        "specialities": [
+          "Elektrik mühəndisliyi",
+          "Energetika mühəndisliyi",
+          "Avtomatlaşdırma mühəndisliyi"
+        ]
+      },
+      {
+        "id": "informasiya-texnologiyalari-ve-idareetme",
+        "name": "İnformasiya texnologiyaları və idarəetmə",
+        "specialities": [
+          "İnformasiya texnologiyaları",
+          "Kompüter mühəndisliyi",
+          "İdarəetmə sistemləri"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-menecment",
+        "name": "İqtisadiyyat və menecment",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aztu",
+    "name": "Azərbaycan Texniki Universiteti",
+    "faculties": [
+      {
+        "id": "energetika-ve-avtomatika",
+        "name": "Energetika və avtomatika",
+        "specialities": [
+          "Elektrik mühəndisliyi",
+          "Energetika mühəndisliyi",
+          "Avtomatlaşdırma mühəndisliyi"
+        ]
+      },
+      {
+        "id": "masinqayirma",
+        "name": "Maşınqayırma",
+        "specialities": [
+          "Maşınqayırma mühəndisliyi",
+          "Mexanika mühəndisliyi",
+          "Material mühəndisliyi"
+        ]
+      },
+      {
+        "id": "informasiya-ve-telekommunikasiya-texnologiyalari",
+        "name": "İnformasiya və telekommunikasiya texnologiyaları",
+        "specialities": [
+          "İnformasiya texnologiyaları",
+          "Kompüter mühəndisliyi",
+          "Telekommunikasiya mühəndisliyi",
+          "İnformasiya təhlükəsizliyi"
+        ]
+      },
+      {
+        "id": "neqliyyat",
+        "name": "Nəqliyyat",
+        "specialities": [
+          "Nəqliyyat mühəndisliyi",
+          "Logistika"
+        ]
+      },
+      {
+        "id": "biznes-ve-idareetme",
+        "name": "Biznes və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "azmiu",
+    "name": "Azərbaycan Memarlıq və İnşaat Universiteti",
+    "faculties": [
+      {
+        "id": "memarliq",
+        "name": "Memarlıq",
+        "specialities": [
+          "Memarlıq",
+          "Dizayn",
+          "Şəhərsalma"
+        ]
+      },
+      {
+        "id": "insaat",
+        "name": "İnşaat",
+        "specialities": [
+          "İnşaat mühəndisliyi",
+          "Hidrotexniki qurğular",
+          "Bina və qurğuların istismarı"
+        ]
+      },
+      {
+        "id": "insaat-texnologiyalari-ve-menecment",
+        "name": "İnşaat texnologiyaları və menecment",
+        "specialities": [
+          "İnşaat menecmenti",
+          "Tikinti materialları və məmulatları",
+          "Ekologiya mühəndisliyi"
+        ]
+      },
+      {
+        "id": "muhendis-sistemleri-ve-ekologiya",
+        "name": "Mühəndis sistemləri və ekologiya",
+        "specialities": [
+          "İstilik-qaz təchizatı və havalandırma",
+          "Su təchizatı və kanalizasiya"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unec",
+    "name": "Azərbaycan Dövlət İqtisad Universiteti (UNEC)",
+    "faculties": [
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Biznesin idarə edilməsi",
+          "Dövlət və bələdiyyə idarəçiliyi"
+        ]
+      },
+      {
+        "id": "maliyye-ve-muhasibat-ucotu",
+        "name": "Maliyyə və mühasibat uçotu",
+        "specialities": [
+          "Maliyyə",
+          "Mühasibat uçotu və audit",
+          "Bank işi",
+          "Sığorta"
+        ]
+      },
+      {
+        "id": "beynelxalq-iqtisadiyyat",
+        "name": "Beynəlxalq iqtisadiyyat",
+        "specialities": [
+          "Beynəlxalq iqtisadi münasibətlər",
+          "Beynəlxalq ticarət",
+          "Gömrük işi"
+        ]
+      },
+      {
+        "id": "marketinq-ve-turizm",
+        "name": "Marketinq və turizm",
+        "specialities": [
+          "Marketinq",
+          "Turizm və otelçilik",
+          "Logistika"
+        ]
+      },
+      {
+        "id": "reqemsal-iqtisadiyyat",
+        "name": "Rəqəmsal iqtisadiyyat",
+        "specialities": [
+          "İnformasiya sistemləri",
+          "Statistika",
+          "Kompüter elmləri"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "adu",
+    "name": "Azərbaycan Dillər Universiteti",
+    "faculties": [
+      {
+        "id": "qerb-dilleri",
+        "name": "Qərb dilləri",
+        "specialities": [
+          "İngilis dili və ədəbiyyatı",
+          "Alman dili və ədəbiyyatı",
+          "Fransız dili və ədəbiyyatı",
+          "İspan dili və ədəbiyyatı"
+        ]
+      },
+      {
+        "id": "tercume",
+        "name": "Tərcümə",
+        "specialities": [
+          "Tərcümə (ingilis dili üzrə)",
+          "Tərcümə (alman dili üzrə)",
+          "Tərcümə (fransız dili üzrə)"
+        ]
+      },
+      {
+        "id": "serq-dilleri",
+        "name": "Şərq dilləri",
+        "specialities": [
+          "Türk dili və ədəbiyyatı",
+          "Çin dili və ədəbiyyatı",
+          "Yapon dili və ədəbiyyatı"
+        ]
+      },
+      {
+        "id": "dil-muellimliyi",
+        "name": "Dil müəllimliyi",
+        "specialities": [
+          "Xarici dil müəllimliyi",
+          "Azərbaycan dili müəllimliyi"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bsu",
+    "name": "Bakı Slavyan Universiteti",
+    "faculties": [
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "Rus dili və ədəbiyyatı",
+          "Azərbaycan dili və ədəbiyyatı",
+          "Dil və ədəbiyyat müəllimliyi"
+        ]
+      },
+      {
+        "id": "tarix-ve-sosial-elmler",
+        "name": "Tarix və sosial elmlər",
+        "specialities": [
+          "Tarix",
+          "Sosiologiya",
+          "Beynəlxalq münasibətlər"
+        ]
+      },
+      {
+        "id": "tetbiqi-riyaziyyat-ve-informatika",
+        "name": "Tətbiqi riyaziyyat və informatika",
+        "specialities": [
+          "Kompüter elmləri",
+          "İnformatika müəllimliyi",
+          "Riyaziyyat"
+        ]
+      },
+      {
+        "id": "tercume",
+        "name": "Tərcümə",
+        "specialities": [
+          "Tərcümə (rus dili üzrə)",
+          "Tərcümə (ingilis dili üzrə)"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "adpu",
+    "name": "Azərbaycan Dövlət Pedaqoji Universiteti",
+    "faculties": [
+      {
+        "id": "ibtidai-tehsil",
+        "name": "İbtidai təhsil",
+        "specialities": [
+          "İbtidai sinif müəllimliyi",
+          "Məktəbəqədər təhsil"
+        ]
+      },
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "Azərbaycan dili və ədəbiyyatı müəllimliyi",
+          "İngilis dili müəllimliyi",
+          "Rus dili müəllimliyi"
+        ]
+      },
+      {
+        "id": "fizika-riyaziyyat-ve-informatika",
+        "name": "Fizika-riyaziyyat və informatika",
+        "specialities": [
+          "Riyaziyyat müəllimliyi",
+          "Fizika müəllimliyi",
+          "İnformatika müəllimliyi"
+        ]
+      },
+      {
+        "id": "tebiet-elmleri",
+        "name": "Təbiət elmləri",
+        "specialities": [
+          "Biologiya müəllimliyi",
+          "Kimya müəllimliyi",
+          "Coğrafiya müəllimliyi"
+        ]
+      },
+      {
+        "id": "pedaqogika-ve-psixologiya",
+        "name": "Pedaqogika və psixologiya",
+        "specialities": [
+          "Psixologiya",
+          "Pedaqogika",
+          "Xüsusi təhsil"
+        ]
+      },
+      {
+        "id": "tarix",
+        "name": "Tarix",
+        "specialities": [
+          "Tarix müəllimliyi",
+          "Hüquq təhsili"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "atu",
+    "name": "Azərbaycan Tibb Universiteti",
+    "faculties": [
+      {
+        "id": "mualice-profilaktika",
+        "name": "Müalicə-profilaktika",
+        "specialities": [
+          "Həkimlik işi"
+        ]
+      },
+      {
+        "id": "pediatriya",
+        "name": "Pediatriya",
+        "specialities": [
+          "Pediatriya"
+        ]
+      },
+      {
+        "id": "stomatologiya",
+        "name": "Stomatologiya",
+        "specialities": [
+          "Stomatologiya"
+        ]
+      },
+      {
+        "id": "tibbi-profilaktika",
+        "name": "Tibbi-profilaktika",
+        "specialities": [
+          "Tibbi-profilaktika işi",
+          "İctimai səhiyyə"
+        ]
+      },
+      {
+        "id": "eczaciliq",
+        "name": "Əczaçılıq",
+        "specialities": [
+          "Əczaçılıq"
+        ]
+      },
+      {
+        "id": "tibbi-biologiya-ve-tibbi-biotexnologiya",
+        "name": "Tibbi biologiya və tibbi biotexnologiya",
+        "specialities": [
+          "Tibbi biologiya",
+          "Tibbi biotexnologiya"
+        ]
+      },
+      {
+        "id": "tibb-bacilari",
+        "name": "Tibb bacıları",
+        "specialities": [
+          "Tibb bacısı işi",
+          "Tibbi reabilitasiya"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "adau",
+    "name": "Azərbaycan Dövlət Aqrar Universiteti",
+    "faculties": [
+      {
+        "id": "aqronomluq",
+        "name": "Aqronomluq",
+        "specialities": [
+          "Aqronomluq",
+          "Bağçılıq",
+          "Bitki mühafizəsi"
+        ]
+      },
+      {
+        "id": "veterinariya",
+        "name": "Veterinariya",
+        "specialities": [
+          "Baytarlıq",
+          "Veterinariya sanitariyası"
+        ]
+      },
+      {
+        "id": "zootexniya",
+        "name": "Zootexniya",
+        "specialities": [
+          "Zootexniya",
+          "Heyvandarlıq"
+        ]
+      },
+      {
+        "id": "aqrar-muhendislik",
+        "name": "Aqrar mühəndislik",
+        "specialities": [
+          "Kənd təsərrüfatının mexanikləşdirilməsi",
+          "Torpaqqurma və kadastr"
+        ]
+      },
+      {
+        "id": "aqrar-iqtisadiyyat",
+        "name": "Aqrar iqtisadiyyat",
+        "specialities": [
+          "Aqrar iqtisadiyyat",
+          "Menecment"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "atu-gence",
+    "name": "Azərbaycan Texnologiya Universiteti",
+    "faculties": [
+      {
+        "id": "texnologiya",
+        "name": "Texnologiya",
+        "specialities": [
+          "Qida mühəndisliyi",
+          "Kimya mühəndisliyi",
+          "Toxuculuq mühəndisliyi"
+        ]
+      },
+      {
+        "id": "mexanika",
+        "name": "Mexanika",
+        "specialities": [
+          "Mexanika mühəndisliyi",
+          "Maşınqayırma mühəndisliyi"
+        ]
+      },
+      {
+        "id": "informasiya-texnologiyalari",
+        "name": "İnformasiya texnologiyaları",
+        "specialities": [
+          "İnformasiya texnologiyaları",
+          "Kompüter mühəndisliyi"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "gdu",
+    "name": "Gəncə Dövlət Universiteti",
+    "faculties": [
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "Azərbaycan dili və ədəbiyyatı",
+          "Xarici dil müəllimliyi"
+        ]
+      },
+      {
+        "id": "fizika-riyaziyyat",
+        "name": "Fizika-riyaziyyat",
+        "specialities": [
+          "Riyaziyyat müəllimliyi",
+          "Fizika müəllimliyi",
+          "İnformatika müəllimliyi"
+        ]
+      },
+      {
+        "id": "tebiet-elmleri",
+        "name": "Təbiət elmləri",
+        "specialities": [
+          "Biologiya müəllimliyi",
+          "Kimya müəllimliyi",
+          "Coğrafiya müəllimliyi"
+        ]
+      },
+      {
+        "id": "tarix-ve-huquq",
+        "name": "Tarix və hüquq",
+        "specialities": [
+          "Tarix müəllimliyi",
+          "Hüquqşünaslıq"
+        ]
+      },
+      {
+        "id": "ibtidai-tehsil",
+        "name": "İbtidai təhsil",
+        "specialities": [
+          "İbtidai sinif müəllimliyi",
+          "Məktəbəqədər təhsil"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sdu",
+    "name": "Sumqayıt Dövlət Universiteti",
+    "faculties": [
+      {
+        "id": "muhendislik",
+        "name": "Mühəndislik",
+        "specialities": [
+          "Kimya mühəndisliyi",
+          "Mexanika mühəndisliyi",
+          "Elektrik mühəndisliyi"
+        ]
+      },
+      {
+        "id": "informatika-ve-riyaziyyat",
+        "name": "İnformatika və riyaziyyat",
+        "specialities": [
+          "İnformatika",
+          "Riyaziyyat",
+          "Kompüter elmləri"
+        ]
+      },
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "Azərbaycan dili və ədəbiyyatı",
+          "İngilis dili müəllimliyi"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ndu",
+    "name": "Naxçıvan Dövlət Universiteti",
+    "faculties": [
+      {
+        "id": "fizika-riyaziyyat",
+        "name": "Fizika-riyaziyyat",
+        "specialities": [
+          "Riyaziyyat",
+          "Fizika",
+          "İnformatika"
+        ]
+      },
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "Azərbaycan dili və ədəbiyyatı",
+          "Xarici dil müəllimliyi"
+        ]
+      },
+      {
+        "id": "tarix-filologiya",
+        "name": "Tarix-filologiya",
+        "specialities": [
+          "Tarix",
+          "Tarix müəllimliyi"
+        ]
+      },
+      {
+        "id": "tebietsunasliq-ve-kend-teserrufati",
+        "name": "Təbiətşünaslıq və kənd təsərrüfatı",
+        "specialities": [
+          "Biologiya",
+          "Coğrafiya",
+          "Aqronomluq"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ldu",
+    "name": "Lənkəran Dövlət Universiteti",
+    "faculties": [
+      {
+        "id": "tebiet-ve-kend-teserrufati",
+        "name": "Təbiət və kənd təsərrüfatı",
+        "specialities": [
+          "Aqronomluq",
+          "Biologiya",
+          "Ekologiya"
+        ]
+      },
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "Azərbaycan dili və ədəbiyyatı",
+          "Xarici dil müəllimliyi"
+        ]
+      },
+      {
+        "id": "pedaqogika",
+        "name": "Pedaqogika",
+        "specialities": [
+          "İbtidai sinif müəllimliyi",
+          "Riyaziyyat müəllimliyi",
+          "İnformatika müəllimliyi"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-huquq",
+        "name": "İqtisadiyyat və hüquq",
+        "specialities": [
+          "İqtisadiyyat",
+          "Hüquqşünaslıq"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mdu",
+    "name": "Mingəçevir Dövlət Universiteti",
+    "faculties": [
+      {
+        "id": "muhendislik",
+        "name": "Mühəndislik",
+        "specialities": [
+          "Energetika mühəndisliyi",
+          "Maşınqayırma mühəndisliyi"
+        ]
+      },
+      {
+        "id": "informatika-ve-riyaziyyat",
+        "name": "İnformatika və riyaziyyat",
+        "specialities": [
+          "İnformatika",
+          "Riyaziyyat",
+          "Kompüter elmləri"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment"
+        ]
+      },
+      {
+        "id": "pedaqoji",
+        "name": "Pedaqoji",
+        "specialities": [
+          "İbtidai sinif müəllimliyi",
+          "Xarici dil müəllimliyi"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "qu",
+    "name": "Qarabağ Universiteti",
+    "faculties": [
+      {
+        "id": "pedaqoji",
+        "name": "Pedaqoji",
+        "specialities": [
+          "İbtidai sinif müəllimliyi",
+          "Azərbaycan dili və ədəbiyyatı müəllimliyi"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment"
+        ]
+      },
+      {
+        "id": "muhendislik-ve-informatika",
+        "name": "Mühəndislik və informatika",
+        "specialities": [
+          "İnformatika",
+          "İnşaat mühəndisliyi"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "akoop",
+    "name": "Azərbaycan Kooperasiya Universiteti",
+    "faculties": [
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      },
+      {
+        "id": "ticaret-ve-logistika",
+        "name": "Ticarət və logistika",
+        "specialities": [
+          "Ticarət işi",
+          "Logistika",
+          "Marketinq"
+        ]
+      },
+      {
+        "id": "qida-texnologiyalari",
+        "name": "Qida texnologiyaları",
+        "specialities": [
+          "Qida mühəndisliyi",
+          "Restoran və otel işi"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "atmu",
+    "name": "Azərbaycan Turizm və Menecment Universiteti",
+    "faculties": [
+      {
+        "id": "turizm",
+        "name": "Turizm",
+        "specialities": [
+          "Turizm və otelçilik",
+          "Turizm işinin təşkili"
+        ]
+      },
+      {
+        "id": "menecment",
+        "name": "Menecment",
+        "specialities": [
+          "Menecment",
+          "Biznesin idarə edilməsi"
+        ]
+      },
+      {
+        "id": "beynelxalq-munasibetler",
+        "name": "Beynəlxalq münasibətlər",
+        "specialities": [
+          "Beynəlxalq münasibətlər",
+          "Regionşünaslıq"
+        ]
+      },
+      {
+        "id": "informasiya-texnologiyalari",
+        "name": "İnformasiya texnologiyaları",
+        "specialities": [
+          "İnformasiya texnologiyaları",
+          "İnformasiya sistemləri"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "admiu",
+    "name": "Azərbaycan Dövlət Mədəniyyət və İncəsənət Universiteti",
+    "faculties": [
+      {
+        "id": "medeniyyet-ve-media",
+        "name": "Mədəniyyət və media",
+        "specialities": [
+          "Mədəniyyət və incəsənət menecmenti",
+          "Kinoşünaslıq",
+          "Mətbuat və media"
+        ]
+      },
+      {
+        "id": "teatr-ve-kino",
+        "name": "Teatr və kino",
+        "specialities": [
+          "Aktyorluq",
+          "Rejissorluq",
+          "Kino və televiziya"
+        ]
+      },
+      {
+        "id": "musiqi",
+        "name": "Musiqi",
+        "specialities": [
+          "Musiqişünaslıq",
+          "Xor dirijorluğu"
+        ]
+      },
+      {
+        "id": "reqs-ve-xoreoqrafiya",
+        "name": "Rəqs və xoreoqrafiya",
+        "specialities": [
+          "Xoreoqrafiya"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bma",
+    "name": "Bakı Musiqi Akademiyası",
+    "faculties": [
+      {
+        "id": "musiqi",
+        "name": "Musiqi",
+        "specialities": [
+          "Musiqişünaslıq",
+          "Bəstəkarlıq",
+          "Dirijorluq"
+        ]
+      },
+      {
+        "id": "ifaciliq",
+        "name": "İfaçılıq",
+        "specialities": [
+          "Fortepiano",
+          "Simli alətlər",
+          "Nəfəs alətləri",
+          "Vokal"
+        ]
+      },
+      {
+        "id": "xalq-calgi-aletleri",
+        "name": "Xalq çalğı alətləri",
+        "specialities": [
+          "Tar",
+          "Kamança",
+          "Qarmon"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "adra",
+    "name": "Azərbaycan Dövlət Rəssamlıq Akademiyası",
+    "faculties": [
+      {
+        "id": "tesviri-incesenet",
+        "name": "Təsviri incəsənət",
+        "specialities": [
+          "Rəngkarlıq",
+          "Qrafika",
+          "Heykəltəraşlıq"
+        ]
+      },
+      {
+        "id": "dizayn",
+        "name": "Dizayn",
+        "specialities": [
+          "Dizayn",
+          "Kommunikasiya dizaynı",
+          "Geyim dizaynı"
+        ]
+      },
+      {
+        "id": "dekorativ-tetbiqi-senet",
+        "name": "Dekorativ-tətbiqi sənət",
+        "specialities": [
+          "Xalçaçılıq",
+          "Keramika",
+          "Zərgərlik"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "adbtia",
+    "name": "Azərbaycan Dövlət Bədən Tərbiyəsi və İdman Akademiyası",
+    "faculties": [
+      {
+        "id": "beden-terbiyesi",
+        "name": "Bədən tərbiyəsi",
+        "specialities": [
+          "Bədən tərbiyəsi müəllimliyi",
+          "İdman təlimçiliyi"
+        ]
+      },
+      {
+        "id": "idman",
+        "name": "İdman",
+        "specialities": [
+          "İdman menecmenti",
+          "Fiziki reabilitasiya"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "addanz",
+    "name": "Azərbaycan Dövlət Dəniz Akademiyası",
+    "faculties": [
+      {
+        "id": "gemi-naviqasiyasi",
+        "name": "Gəmi naviqasiyası",
+        "specialities": [
+          "Dəniz naviqasiyası",
+          "Dəniz nəqliyyatının idarə edilməsi"
+        ]
+      },
+      {
+        "id": "gemi-mexanikasi",
+        "name": "Gəmi mexanikası",
+        "specialities": [
+          "Gəmi enerji qurğuları",
+          "Dəniz mühəndisliyi"
+        ]
+      },
+      {
+        "id": "deniz-logistikasi",
+        "name": "Dəniz logistikası",
+        "specialities": [
+          "Logistika",
+          "Liman və terminal idarəçiliyi"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "maa",
+    "name": "Milli Aviasiya Akademiyası",
+    "faculties": [
+      {
+        "id": "aviasiya",
+        "name": "Aviasiya",
+        "specialities": [
+          "Uçuş istismarı",
+          "Hava nəqliyyatı mühəndisliyi"
+        ]
+      },
+      {
+        "id": "muhendislik",
+        "name": "Mühəndislik",
+        "specialities": [
+          "Aviasiya mühəndisliyi",
+          "Aerokosmik mühəndislik"
+        ]
+      },
+      {
+        "id": "informasiya-texnologiyalari",
+        "name": "İnformasiya texnologiyaları",
+        "specialities": [
+          "Kompüter mühəndisliyi",
+          "İnformasiya texnologiyaları"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "adia",
+    "name": "Azərbaycan Respublikası Dövlət İdarəçilik Akademiyası",
+    "faculties": [
+      {
+        "id": "dovlet-idareciliyi",
+        "name": "Dövlət idarəçiliyi",
+        "specialities": [
+          "Dövlət və ictimai idarəetmə",
+          "Siyasi idarəetmə"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat",
+        "name": "İqtisadiyyat",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bhos",
+    "name": "Bakı Ali Neft Məktəbi",
+    "faculties": [
+      {
+        "id": "muhendislik",
+        "name": "Mühəndislik",
+        "specialities": [
+          "Neft mühəndisliyi",
+          "Kimya mühəndisliyi",
+          "Elektrik mühəndisliyi",
+          "Geologiya mühəndisliyi"
+        ]
+      },
+      {
+        "id": "biznes-ve-idareetme",
+        "name": "Biznes və idarəetmə",
+        "specialities": [
+          "Biznesin idarə edilməsi",
+          "İqtisadiyyat"
+        ]
+      },
+      {
+        "id": "informasiya-texnologiyalari",
+        "name": "İnformasiya texnologiyaları",
+        "specialities": [
+          "Kompüter elmləri",
+          "İnformasiya texnologiyaları"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ufaz",
+    "name": "Azərbaycan-Fransız Universiteti (UFAZ)",
+    "faculties": [
+      {
+        "id": "muhendislik-ve-elmler",
+        "name": "Mühəndislik və elmlər",
+        "specialities": [
+          "Kimya mühəndisliyi",
+          "Neft və qaz mühəndisliyi",
+          "Geologiya",
+          "Kompüter elmləri",
+          "Sənaye informatikası"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "xezer",
+    "name": "Xəzər Universiteti",
+    "faculties": [
+      {
+        "id": "muhendislik-ve-tetbiqi-elmler",
+        "name": "Mühəndislik və tətbiqi elmlər",
+        "specialities": [
+          "Kompüter elmləri",
+          "Elektrik və elektronika mühəndisliyi",
+          "Neft mühəndisliyi"
+        ]
+      },
+      {
+        "id": "biznes-ve-idareetme",
+        "name": "Biznes və idarəetmə",
+        "specialities": [
+          "Biznesin idarə edilməsi",
+          "Maliyyə",
+          "İqtisadiyyat"
+        ]
+      },
+      {
+        "id": "humanitar-ve-sosial-elmler",
+        "name": "Humanitar və sosial elmlər",
+        "specialities": [
+          "İngilis dili və ədəbiyyatı",
+          "Beynəlxalq münasibətlər",
+          "Psixologiya"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "qafqaz",
+    "name": "Qafqaz Universiteti",
+    "faculties": [
+      {
+        "id": "muhendislik",
+        "name": "Mühəndislik",
+        "specialities": [
+          "Kompüter mühəndisliyi",
+          "İnşaat mühəndisliyi",
+          "Elektrik mühəndisliyi"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      },
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "İngilis dili və ədəbiyyatı",
+          "Türk dili və ədəbiyyatı"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "azuni",
+    "name": "Azərbaycan Universiteti",
+    "faculties": [
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      },
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "İngilis dili müəllimliyi",
+          "Tərcümə"
+        ]
+      },
+      {
+        "id": "informasiya-texnologiyalari",
+        "name": "İnformasiya texnologiyaları",
+        "specialities": [
+          "İnformasiya texnologiyaları",
+          "Kompüter elmləri"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "oyu",
+    "name": "Odlar Yurdu Universiteti",
+    "faculties": [
+      {
+        "id": "muhendislik",
+        "name": "Mühəndislik",
+        "specialities": [
+          "Neft-qaz mühəndisliyi",
+          "İnformasiya texnologiyaları"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      },
+      {
+        "id": "filologiya-ve-tercume",
+        "name": "Filologiya və tərcümə",
+        "specialities": [
+          "Tərcümə",
+          "İngilis dili və ədəbiyyatı"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bmu",
+    "name": "Bakı Mühəndislik Universiteti",
+    "faculties": [
+      {
+        "id": "muhendislik",
+        "name": "Mühəndislik",
+        "specialities": [
+          "Kompüter mühəndisliyi",
+          "Elektrik mühəndisliyi",
+          "İnşaat mühəndisliyi"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bbu",
+    "name": "Bakı Biznes Universiteti",
+    "faculties": [
+      {
+        "id": "biznes-ve-idareetme",
+        "name": "Biznes və idarəetmə",
+        "specialities": [
+          "Biznesin idarə edilməsi",
+          "Menecment",
+          "Marketinq"
+        ]
+      },
+      {
+        "id": "iqtisadiyyat-ve-maliyye",
+        "name": "İqtisadiyyat və maliyyə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Maliyyə",
+          "Mühasibat uçotu"
+        ]
+      },
+      {
+        "id": "informasiya-texnologiyalari",
+        "name": "İnformasiya texnologiyaları",
+        "specialities": [
+          "İnformasiya texnologiyaları",
+          "Kompüter elmləri"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bau",
+    "name": "Bakı Asiya Universiteti",
+    "faculties": [
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      },
+      {
+        "id": "informasiya-texnologiyalari",
+        "name": "İnformasiya texnologiyaları",
+        "specialities": [
+          "İnformasiya texnologiyaları",
+          "Kompüter elmləri"
+        ]
+      },
+      {
+        "id": "humanitar-elmler",
+        "name": "Humanitar elmlər",
+        "specialities": [
+          "Psixologiya",
+          "Xarici dil müəllimliyi"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nu",
+    "name": "Naxçıvan Universiteti",
+    "faculties": [
+      {
+        "id": "iqtisadiyyat-ve-idareetme",
+        "name": "İqtisadiyyat və idarəetmə",
+        "specialities": [
+          "İqtisadiyyat",
+          "Menecment",
+          "Maliyyə"
+        ]
+      },
+      {
+        "id": "muhendislik",
+        "name": "Mühəndislik",
+        "specialities": [
+          "Kompüter mühəndisliyi",
+          "İnşaat mühəndisliyi"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      },
+      {
+        "id": "filologiya",
+        "name": "Filologiya",
+        "specialities": [
+          "Xarici dil müəllimliyi",
+          "Azərbaycan dili və ədəbiyyatı"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "wcu",
+    "name": "Qərbi Kaspi Universiteti",
+    "faculties": [
+      {
+        "id": "biznes-ve-idareetme",
+        "name": "Biznes və idarəetmə",
+        "specialities": [
+          "Biznesin idarə edilməsi",
+          "Maliyyə",
+          "Marketinq"
+        ]
+      },
+      {
+        "id": "muhendislik-ve-informatika",
+        "name": "Mühəndislik və informatika",
+        "specialities": [
+          "Kompüter elmləri",
+          "İnformasiya texnologiyaları",
+          "Elektrik mühəndisliyi"
+        ]
+      },
+      {
+        "id": "huquq",
+        "name": "Hüquq",
+        "specialities": [
+          "Hüquqşünaslıq"
+        ]
+      },
+      {
+        "id": "sosial-elmler",
+        "name": "Sosial elmlər",
+        "specialities": [
+          "Beynəlxalq münasibətlər",
+          "Psixologiya"
+        ]
+      }
+    ]
+  }
+]

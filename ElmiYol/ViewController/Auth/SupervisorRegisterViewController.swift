@@ -8,7 +8,6 @@
 import UIKit
 import SnapKit
 import FirebaseAuth
-import FirebaseAuth
 
 final class SupervisorRegisterViewController: UIViewController {
 

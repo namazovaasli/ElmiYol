@@ -85,6 +85,7 @@ final class SplashViewController: UIViewController {
         return indicator
     }()
 
+    var onContinue: (() -> Void)?
     private var didNavigate = false
 
     override func viewDidLoad() {
@@ -194,7 +195,11 @@ final class SplashViewController: UIViewController {
     @objc private func handleScreenTap() {
         guard !didNavigate else { return }
         didNavigate = true
-        goToNextScreen()
+        if let onContinue {
+            onContinue()
+        } else {
+            goToNextScreen()
+        }
     }
 
     private func animateEntrance() {
@@ -233,7 +238,7 @@ final class SplashViewController: UIViewController {
     private func goToNextScreen() {
         if let user = FirebaseAuthService.shared.currentUser,
            let window = view.window {
-            AuthCoordinator.route(user: user, in: window) { [weak self] error in
+            FirebaseAuthService.AuthCoordinator.route(user: user, in: window) { [weak self] error in
                 self?.presentAuthError(error)
             }
             return

@@ -4,32 +4,48 @@ import UIKit
 
 struct RootView: View {
     @EnvironmentObject private var auth: AuthManager
+    @State private var launchStage: LaunchStage = .splash
 
     var body: some View {
         Group {
-            if auth.isResolvingSession {
-                LaunchView()
-            } else if let role = auth.role {
-                LegacyMainAppView(role: role)
-                    .ignoresSafeArea()
-            } else {
-                NavigationStack(path: $auth.path) {
-                    WelcomeView()
-                        .navigationDestination(for: AuthFlowDestination.self) { destination in
-                            switch destination {
-                            case .login:
-                                LoginView()
-                            case .roleSelection:
-                                RoleSelectionView()
-                            case .studentRegistration:
-                                StudentRegistrationView()
-                            case .supervisorRegistration:
-                                SupervisorRegistrationView()
+            switch launchStage {
+            case .splash:
+                LaunchView(isLoading: auth.isResolvingSession, onContinue: continueFromSplash)
+            case .onboardingFirst:
+                OnboardingFirstView(
+                    onBack: { setLaunchStage(.splash) },
+                    onSkip: { setLaunchStage(.onboardingSecond) },
+                    onContinue: { setLaunchStage(.onboardingSecond) }
+                )
+            case .onboardingSecond:
+                OnboardingSecondView(
+                    onBack: { setLaunchStage(.onboardingFirst) },
+                    onFinish: finishOnboarding
+                )
+            case .complete:
+                if let role = auth.role {
+                    LegacyMainAppView(role: role)
+                        .ignoresSafeArea()
+                } else {
+                    NavigationStack(path: $auth.path) {
+                        WelcomeView()
+                            .navigationDestination(for: AuthFlowDestination.self) { destination in
+                                switch destination {
+                                case .login:
+                                    LoginView()
+                                case .roleSelection:
+                                    RoleSelectionView()
+                                case .studentRegistration:
+                                    StudentRegistrationView()
+                                case .supervisorRegistration:
+                                    SupervisorRegistrationView()
+                                }
                             }
-                        }
+                    }
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: launchStage)
         .tint(ElmiYolStyle.primary)
         .alert(
             auth.alertTitle,
@@ -48,21 +64,319 @@ struct RootView: View {
                 .presentationDragIndicator(.visible)
         }
     }
+
+    private func continueFromSplash() {
+        guard !auth.isResolvingSession else { return }
+        if auth.user != nil {
+            if auth.needsRoleSelection {
+                auth.path = [.roleSelection]
+            }
+            setLaunchStage(.complete)
+        } else {
+            setLaunchStage(.onboardingFirst)
+        }
+    }
+
+    private func finishOnboarding() {
+        auth.path = [.roleSelection]
+        setLaunchStage(.complete)
+    }
+
+    private func setLaunchStage(_ stage: LaunchStage) {
+        withAnimation(.easeInOut(duration: 0.25)) {
+            launchStage = stage
+        }
+    }
+}
+
+private enum LaunchStage: Equatable {
+    case splash
+    case onboardingFirst
+    case onboardingSecond
+    case complete
 }
 
 private struct LaunchView: View {
+    let isLoading: Bool
+    let onContinue: () -> Void
+
     var body: some View {
-        ZStack {
-            ElmiYolStyle.background.ignoresSafeArea()
-            VStack(spacing: 18) {
-                BrandMark(size: 116)
-                BrandName(fontSize: 38)
-                Text("Elmi yolunuzda etibarlı tərəfdaşınız.")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(ElmiYolStyle.secondary)
-                ProgressView().tint(ElmiYolStyle.primary).padding(.top, 22)
+        GeometryReader { geometry in
+            Button(action: onContinue) {
+                ZStack(alignment: .bottom) {
+                    Color.white.ignoresSafeArea()
+                    OnboardingWaves()
+                        .frame(height: geometry.size.height * 0.43)
+                        .ignoresSafeArea(edges: .bottom)
+
+                    VStack(spacing: 0) {
+                        ZStack {
+                            Circle()
+                                .stroke(ElmiYolStyle.primary.opacity(0.2), lineWidth: 1)
+                                .frame(width: 184, height: 184)
+                            BrandMark(size: 150)
+                        }
+                        .padding(.bottom, 22)
+
+                        BrandName(fontSize: 44)
+                        SplashDivider()
+                            .padding(.top, 17)
+                        Text("Elmi yolunuzda\netibarlı tərəfdaşınız.")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(ElmiYolStyle.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.top, 16)
+
+                        Spacer(minLength: 24)
+                        if isLoading {
+                            ProgressView()
+                                .tint(ElmiYolStyle.primary.opacity(0.75))
+                        } else {
+                            Text("Davam etmək üçün toxunun")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(ElmiYolStyle.secondary)
+                        }
+                    }
+                    .padding(.top, max(geometry.safeAreaInsets.top + 46, 76))
+                    .padding(.bottom, max(geometry.safeAreaInsets.bottom + 32, 48))
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(isLoading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
+private struct OnboardingFirstView: View {
+    let onBack: () -> Void
+    let onSkip: () -> Void
+    let onContinue: () -> Void
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                Color.white.ignoresSafeArea()
+                OnboardingWaves()
+                    .frame(height: geometry.size.height * 0.28)
+                    .ignoresSafeArea(edges: .bottom)
+
+                VStack(spacing: 0) {
+                    HStack {
+                        Spacer()
+                        Button("Keç", action: onSkip)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(ElmiYolStyle.primary)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+
+                    Image("onboarding_progress_illustration")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: min(340, geometry.size.height * 0.42))
+                        .padding(.horizontal, 24)
+                        .padding(.top, 12)
+
+                    OnboardingPageIndicator(activePage: 0)
+                        .padding(.top, 10)
+
+                    (Text("İrəliləyişinizi\n").foregroundColor(ElmiYolStyle.ink)
+                     + Text("asanlıqla izləyin").foregroundColor(ElmiYolStyle.primary))
+                        .font(.system(size: 26, weight: .bold))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 18)
+
+                    Text("Dissertasiya, tezis və məqalələrinizin mərhələlərini izləyin, son tarixləri qaçırmayın. Hədəflərinizə addım-addım yaxınlaşın.")
+                        .font(.system(size: 15))
+                        .foregroundStyle(ElmiYolStyle.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                        .padding(.horizontal, 36)
+                        .padding(.top, 12)
+
+                    Spacer(minLength: 18)
+                    HStack(spacing: 12) {
+                        OnboardingActionButton(title: "Geri", secondary: true, action: onBack)
+                        OnboardingActionButton(title: "Növbəti", icon: "chevron.right", action: onContinue)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, max(geometry.safeAreaInsets.bottom + 16, 28))
+                }
             }
         }
+    }
+}
+
+private struct OnboardingSecondView: View {
+    let onBack: () -> Void
+    let onFinish: () -> Void
+
+    private let features: [OnboardingFeature] = [
+        OnboardingFeature(icon: "bubble.left.and.bubble.right.fill", title: "Rəylər və\nşərhlər"),
+        OnboardingFeature(icon: "square.and.arrow.up.fill", title: "Fayl\npaylaşımı"),
+        OnboardingFeature(icon: "bell.fill", title: "Bildirişlərlə\nxəbərdar olun")
+    ]
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                Color.white.ignoresSafeArea()
+                OnboardingWaves()
+                    .frame(height: geometry.size.height * 0.25)
+                    .ignoresSafeArea(edges: .bottom)
+
+                VStack(spacing: 0) {
+                    HStack {
+                        Spacer()
+                        Button("Keç", action: onFinish)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(ElmiYolStyle.primary)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+
+                    Image("onboarding_teacher_student_illustration")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: min(320, geometry.size.height * 0.39))
+                        .padding(.horizontal, 24)
+                        .padding(.top, 12)
+
+                    OnboardingPageIndicator(activePage: 1)
+                        .padding(.top, 10)
+
+                    (Text("Elmi rəhbərlə\n").foregroundColor(ElmiYolStyle.ink)
+                     + Text("daim əlaqədə olun").foregroundColor(ElmiYolStyle.primary))
+                        .font(.system(size: 26, weight: .bold))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 18)
+
+                    Text("Rəyləri görün, suallarınızı verin, fayl və sənədlərinizi asanlıqla paylaşın.")
+                        .font(.system(size: 15))
+                        .foregroundStyle(ElmiYolStyle.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                        .padding(.horizontal, 36)
+                        .padding(.top, 12)
+
+                    HStack(alignment: .top, spacing: 8) {
+                        ForEach(features) { feature in
+                            VStack(spacing: 8) {
+                                Image(systemName: feature.icon)
+                                    .font(.system(size: 19, weight: .medium))
+                                    .foregroundStyle(ElmiYolStyle.primary)
+                                Text(feature.title)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(ElmiYolStyle.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 18)
+
+                    Spacer(minLength: 16)
+                    HStack(spacing: 12) {
+                        OnboardingActionButton(title: "Geri", secondary: true, action: onBack)
+                        OnboardingActionButton(title: "Başlayaq", icon: "chevron.right", action: onFinish)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, max(geometry.safeAreaInsets.bottom + 16, 28))
+                }
+            }
+        }
+    }
+}
+
+private struct OnboardingFeature: Identifiable {
+    let icon: String
+    let title: String
+    var id: String { title }
+}
+
+private struct OnboardingPageIndicator: View {
+    let activePage: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(0..<2) { page in
+                Capsule()
+                    .fill(page == activePage ? ElmiYolStyle.primary : ElmiYolStyle.border)
+                    .frame(width: page == activePage ? 20 : 8, height: 7)
+            }
+        }
+        .accessibilityLabel("Səhifə \(activePage + 1), 2-dən")
+    }
+}
+
+private struct OnboardingActionButton: View {
+    let title: String
+    var icon: String? = nil
+    var secondary = false
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 7) {
+                Text(title)
+                if let icon { Image(systemName: icon) }
+            }
+            .font(.system(size: 16, weight: .semibold))
+            .foregroundStyle(secondary ? ElmiYolStyle.ink : .white)
+            .frame(maxWidth: .infinity, minHeight: 54)
+            .background(secondary ? Color(red: 0.94, green: 0.95, blue: 0.97) : ElmiYolStyle.primary, in: Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct SplashDivider: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            Rectangle().fill(ElmiYolStyle.primary.opacity(0.45)).frame(width: 50, height: 1)
+            Circle().fill(ElmiYolStyle.primary).frame(width: 6, height: 6)
+            Rectangle().fill(ElmiYolStyle.primary.opacity(0.45)).frame(width: 50, height: 1)
+        }
+    }
+}
+
+private struct OnboardingWaves: View {
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                OnboardingWaveShape()
+                    .fill(ElmiYolStyle.primary.opacity(0.05))
+                    .frame(height: geometry.size.height * 0.78)
+                    .offset(y: 18)
+                OnboardingWaveShape()
+                    .fill(ElmiYolStyle.primary.opacity(0.07))
+                    .frame(height: geometry.size.height * 0.58)
+                    .offset(y: 22)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+private struct OnboardingWaveShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: 0, y: rect.height * 0.24))
+        path.addCurve(
+            to: CGPoint(x: rect.width, y: rect.height * 0.20),
+            control1: CGPoint(x: rect.width * 0.27, y: -rect.height * 0.05),
+            control2: CGPoint(x: rect.width * 0.58, y: rect.height * 0.50)
+        )
+        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        path.addLine(to: CGPoint(x: 0, y: rect.height))
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -177,16 +491,6 @@ private struct LoginView: View {
                     Rectangle().fill(ElmiYolStyle.border).frame(height: 1)
                 }
 
-                SignInWithAppleButton(.signIn) { request in
-                    auth.prepareAppleRequest(request)
-                } onCompletion: { result in
-                    Task { await auth.handleApple(result) }
-                }
-                .signInWithAppleButtonStyle(.black)
-                .frame(height: 52)
-                .clipShape(RoundedRectangle(cornerRadius: 15))
-                .disabled(auth.isBusy)
-
                 Button {
                     Task { await auth.signInWithGoogle() }
                 } label: {
@@ -199,21 +503,6 @@ private struct LoginView: View {
                     .frame(maxWidth: .infinity, minHeight: 52)
                     .background(.white, in: RoundedRectangle(cornerRadius: 15))
                     .overlay(RoundedRectangle(cornerRadius: 15).stroke(ElmiYolStyle.border, lineWidth: 1))
-                }
-                .disabled(auth.isBusy)
-
-                Button {
-                    guard validEmail else {
-                        auth.showMessage("E-poçt bağlantısı almaq üçün düzgün e-poçt ünvanı daxil edin.")
-                        return
-                    }
-                    Task { await auth.sendEmailSignInLink(to: email) }
-                } label: {
-                    Label("E-poçt linki ilə daxil ol", systemImage: "envelope.badge")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(ElmiYolStyle.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
                 }
                 .disabled(auth.isBusy)
 
@@ -251,7 +540,7 @@ private struct RoleSelectionView: View {
         AuthPageScaffold(showBackButton: auth.user == nil) {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(auth.isCompletingOAuthProfile ? "Profilinizi tamamlayın" : "Rolünüzü seçin")
+                    Text(auth.isCompletingOAuthProfile ? "Profilinizi tamamlayın" : "Rolunuzu seçin")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(ElmiYolStyle.ink)
                     Text(auth.isCompletingOAuthProfile
@@ -280,7 +569,19 @@ private struct RoleSelectionView: View {
                     auth.path.append(.supervisorRegistration)
                 }
 
-                if auth.user != nil {
+                if auth.user == nil {
+                    Button {
+                        auth.path = [.login]
+                    } label: {
+                        Text("Daxil ol")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(ElmiYolStyle.primary)
+                            .frame(maxWidth: .infinity, minHeight: 54)
+                            .background(.white, in: RoundedRectangle(cornerRadius: 16))
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(ElmiYolStyle.border, lineWidth: 1))
+                    }
+                    .padding(.top, 2)
+                } else {
                     Button("Başqa hesabla daxil olun") { auth.signOut() }
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(ElmiYolStyle.primary)
@@ -294,25 +595,29 @@ private struct RoleSelectionView: View {
 
 private struct StudentRegistrationView: View {
     @EnvironmentObject private var auth: AuthManager
+    
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var email = ""
     @State private var phone = ""
-    @State private var university = ""
-    @State private var faculty = ""
-    @State private var speciality = ""
     @State private var groupNumber = ""
-    @State private var studyYears = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    
+    @StateObject private var catalog = CatalogViewModel()
+    @State private var university: CatalogItem?
+    @State private var faculty: CatalogItem?
+    @State private var speciality: CatalogItem?
+    @State private var studyYears: CatalogItem?
+    @State private var showSelectionErrors = false
     @State private var acceptedTerms = false
 
-    private let universityOptions = ["Bakı Dövlət Universiteti", "ADA Universiteti", "Xəzər Universiteti", "Azərbaycan Texniki Universiteti", "UNEC"]
-    private let facultyOptions = ["Kompüter Elmləri", "İqtisadiyyat", "Filologiya", "Hüquq", "Fizika"]
-    private let specialityOptions = ["Proqram Mühəndisliyi", "Maliyyə", "Marketinq", "Beynəlxalq Münasibətlər"]
-    private var studyYearsOptions: [String] {
+    private var studyYearsItems: [CatalogItem] {
         let currentYear = Calendar.current.component(.year, from: Date())
-        return (0...3).map { "\(currentYear + $0)-\(currentYear + $0 + 2)" }
+        return (0...3).map {
+            let text = "\(currentYear + $0)-\(currentYear + $0 + 2)"
+            return CatalogItem(id: text, name: text)
+        }
     }
 
     var body: some View {
@@ -328,11 +633,56 @@ private struct StudentRegistrationView: View {
                     .disabled(auth.user != nil)
                 AuthTextField(title: "Telefon nömrəsi", placeholder: "50 123 45 67", text: $phone, icon: "phone")
                     .keyboardType(.phonePad)
-                ChoicePickerField(title: "Universitet", placeholder: "Universitetinizi seçin", selection: $university, options: universityOptions, icon: "building.columns")
-                ChoicePickerField(title: "Fakültə", placeholder: "Fakültənizi seçin", selection: $faculty, options: facultyOptions, icon: "person.text.rectangle")
-                ChoicePickerField(title: "İxtisas", placeholder: "İxtisasınızı seçin", selection: $speciality, options: specialityOptions, icon: "graduationcap")
+                
+                CatalogPickerField(
+                    title: "Universitet", placeholder: "Universitetinizi seçin", icon: "building.columns",
+                    items: catalog.universities,
+                    isLoading: catalog.isLoadingUniversities,
+                    loadError: catalog.universitiesError,
+                    fieldError: showSelectionErrors && university == nil ? "Universiteti seçin" : nil,
+                    selection: $university,
+                    onRetry: { Task { await catalog.loadUniversities() } }
+                )
+                
+                CatalogPickerField(
+                    title: "Fakültə", placeholder: "Fakültənizi seçin", icon: "person.text.rectangle",
+                    items: catalog.faculties,
+                    isLoading: catalog.isLoadingFaculties,
+                    loadError: catalog.facultiesError,
+                    isEnabled: university != nil,
+                    disabledHint: "Əvvəlcə universiteti seçin",
+                    fieldError: showSelectionErrors && faculty == nil && university != nil ? "Fakültəni seçin" : nil,
+                    selection: $faculty,
+                    onRetry: {
+                        if let university { Task { await catalog.loadFaculties(universityId: university.id) } }
+                    }
+                )
+                
+                CatalogPickerField(
+                    title: "İxtisas", placeholder: "İxtisasınızı seçin", icon: "graduationcap",
+                    items: catalog.specialities,
+                    isLoading: catalog.isLoadingSpecialities,
+                    loadError: catalog.specialitiesError,
+                    isEnabled: faculty != nil,
+                    disabledHint: "Əvvəlcə fakültəni seçin",
+                    fieldError: showSelectionErrors && speciality == nil && faculty != nil ? "İxtisası seçin" : nil,
+                    selection: $speciality,
+                    onRetry: {
+                        if let university, let faculty {
+                            Task { await catalog.loadSpecialities(universityId: university.id, facultyId: faculty.id) }
+                        }
+                    }
+                )
+                
                 AuthTextField(title: "Qrup nömrəsi", placeholder: "Məs: 704a2", text: $groupNumber, icon: "number")
-                ChoicePickerField(title: "Təhsil illəri", placeholder: "Təhsil illərinizi seçin", selection: $studyYears, options: studyYearsOptions, icon: "calendar")
+                
+                CatalogPickerField(
+                    title: "Təhsil illəri", placeholder: "Təhsil illərinizi seçin", icon: "calendar",
+                    items: studyYearsItems,
+                    fieldError: showSelectionErrors && studyYears == nil ? "Təhsil illərini seçin" : nil,
+                    selection: $studyYears
+                )
+                
                 if auth.user == nil {
                     AuthSecureField(title: "Şifrə", placeholder: "Şifrə yaradın", text: $password)
                         .textContentType(.newPassword)
@@ -347,6 +697,19 @@ private struct StudentRegistrationView: View {
             }
         }
         .onAppear(perform: prefillAccountDetails)
+        
+        .task { await catalog.loadUniversities() }
+        .onChange(of: university) { _, newValue in
+            faculty = nil
+            speciality = nil
+            guard let newValue else { catalog.clearFaculties(); return }
+            Task { await catalog.loadFaculties(universityId: newValue.id) }
+        }
+        .onChange(of: faculty) { _, newValue in
+            speciality = nil
+            guard let newValue, let university else { catalog.clearSpecialities(); return }
+            Task { await catalog.loadSpecialities(universityId: university.id, facultyId: newValue.id) }
+        }
     }
 
     private var termsToggle: some View {
@@ -375,16 +738,22 @@ private struct StudentRegistrationView: View {
     }
 
     private func submit() {
+        showSelectionErrors = true
         var model = StudentRegisterModel()
         model.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         model.lastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
         model.email = email.trimmingCharacters(in: .whitespacesAndNewlines)
         model.phone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
-        model.university = university
-        model.faculty = faculty
-        model.speciality = speciality
         model.groupNumber = groupNumber.trimmingCharacters(in: .whitespacesAndNewlines)
-        model.studyYears = studyYears
+        
+        model.university = university?.name ?? ""
+        model.universityId = university?.id ?? ""
+        model.faculty = faculty?.name ?? ""
+        model.facultyId = faculty?.id ?? ""
+        model.speciality = speciality?.name ?? ""
+        model.specialityId = speciality?.id ?? ""
+        model.studyYears = studyYears?.name ?? ""
+        
         model.password = auth.user == nil ? password : ""
         model.confirmPassword = auth.user == nil ? confirmPassword : ""
         model.acceptedTerms = acceptedTerms
@@ -394,7 +763,7 @@ private struct StudentRegistrationView: View {
             (model.phone, .phone), (model.groupNumber, .required(fieldName: "Qrup nömrəsi"))
         ]
         guard validate(required, onError: { auth.showMessage($0) }) else { return }
-        guard !model.university.isEmpty, !model.faculty.isEmpty, !model.speciality.isEmpty, !model.studyYears.isEmpty else {
+        guard university != nil, faculty != nil, speciality != nil, studyYears != nil else {
             auth.showMessage("Universitet, fakültə, ixtisas və təhsil illərini seçin.")
             return
         }
@@ -411,22 +780,25 @@ private struct StudentRegistrationView: View {
 
 private struct SupervisorRegistrationView: View {
     @EnvironmentObject private var auth: AuthManager
+    @StateObject private var catalog = CatalogViewModel()
+    @State private var workplace: CatalogItem?
+    @State private var specialityField: CatalogItem?
+    @State private var showSelectionErrors = false
+    
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var email = ""
     @State private var phone = ""
-    @State private var workplace = ""
     @State private var position = ""
     @State private var academicDegree = ""
-    @State private var specialityField = ""
+    
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var acceptedTerms = false
 
-    private let workplaceOptions = ["Bakı Dövlət Universiteti", "ADA Universiteti", "Xəzər Universiteti", "Azərbaycan Texniki Universiteti", "UNEC"]
     private let positionOptions = ["Professor", "Dosent", "Baş müəllim", "Assistent"]
     private let degreeOptions = ["Elmlər doktoru", "Fəlsəfə doktoru (PhD)", "Dosent", "Professor"]
-    private let specialityOptions = ["Kompüter Elmləri", "İqtisadiyyat", "Filologiya", "Hüquq", "Fizika"]
+   
 
     var body: some View {
         AuthPageScaffold {
@@ -438,10 +810,34 @@ private struct SupervisorRegistrationView: View {
                     .textContentType(.emailAddress).keyboardType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled()
                     .disabled(auth.user != nil)
                 AuthTextField(title: "Telefon nömrəsi", placeholder: "50 123 45 67", text: $phone, icon: "phone").keyboardType(.phonePad)
-                ChoicePickerField(title: "İş yeri / Universitet", placeholder: "İş yerinizi seçin", selection: $workplace, options: workplaceOptions, icon: "building.columns")
+                
+                CatalogPickerField(
+                    title: "İş yeri / Universitet", placeholder: "İş yerinizi seçin", icon: "building.columns",
+                    items: catalog.universities,
+                    isLoading: catalog.isLoadingUniversities,
+                    loadError: catalog.universitiesError,
+                    fieldError: showSelectionErrors && workplace == nil ? "İş yerini seçin" : nil,
+                    selection: $workplace,
+                    onRetry: { Task { await catalog.loadUniversities() } }
+                )
+                
                 ChoicePickerField(title: "Vəzifə", placeholder: "Vəzifənizi seçin", selection: $position, options: positionOptions, icon: "person.text.rectangle")
                 ChoicePickerField(title: "Elmi dərəcə", placeholder: "Elmi dərəcənizi seçin", selection: $academicDegree, options: degreeOptions, icon: "graduationcap")
-                ChoicePickerField(title: "İxtisas sahəsi", placeholder: "İxtisas sahənizi seçin", selection: $specialityField, options: specialityOptions, icon: "book")
+                
+                CatalogPickerField(
+                    title: "İxtisas sahəsi", placeholder: "İxtisas sahənizi seçin", icon: "book",
+                    items: catalog.faculties,
+                    isLoading: catalog.isLoadingFaculties,
+                    loadError: catalog.facultiesError,
+                    isEnabled: workplace != nil,
+                    disabledHint: "Əvvəlcə iş yerini seçin",
+                    fieldError: showSelectionErrors && specialityField == nil && workplace != nil ? "İxtisas sahəsini seçin" : nil,
+                    selection: $specialityField,
+                    onRetry: {
+                        if let workplace { Task { await catalog.loadFaculties(universityId: workplace.id) } }
+                    }
+                )
+                
                 if auth.user == nil {
                     AuthSecureField(title: "Şifrə", placeholder: "Şifrə yaradın", text: $password).textContentType(.newPassword)
                     AuthSecureField(title: "Şifrəni təkrar daxil edin", placeholder: "Şifrəni təkrar edin", text: $confirmPassword).textContentType(.newPassword)
@@ -461,6 +857,12 @@ private struct SupervisorRegistrationView: View {
             }
         }
         .onAppear(perform: prefillAccountDetails)
+        .task { await catalog.loadUniversities() }
+        .onChange(of: workplace) { _, newValue in
+            specialityField = nil
+            guard let newValue else { catalog.clearFaculties(); return }
+            Task { await catalog.loadFaculties(universityId: newValue.id) }
+        }
     }
 
     private func prefillAccountDetails() {
@@ -475,10 +877,14 @@ private struct SupervisorRegistrationView: View {
         model.lastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
         model.email = email.trimmingCharacters(in: .whitespacesAndNewlines)
         model.phone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
-        model.workplace = workplace
+        showSelectionErrors = true
+        model.workplace = workplace?.name ?? ""
+        model.workplaceId = workplace?.id ?? ""
+        model.specialityField = specialityField?.name ?? ""
+        model.facultyId = specialityField?.id ?? ""
+        
         model.position = position
         model.academicDegree = academicDegree
-        model.specialityField = specialityField
         model.password = auth.user == nil ? password : ""
         model.confirmPassword = auth.user == nil ? confirmPassword : ""
         model.acceptedTerms = acceptedTerms
@@ -487,7 +893,8 @@ private struct SupervisorRegistrationView: View {
             (model.firstName, .name), (model.lastName, .surname), (model.email, .email), (model.phone, .phone)
         ]
         guard validate(required, onError: { auth.showMessage($0) }) else { return }
-        guard !model.workplace.isEmpty, !model.position.isEmpty, !model.academicDegree.isEmpty, !model.specialityField.isEmpty else {
+        guard workplace != nil, specialityField != nil,
+              !model.position.isEmpty, !model.academicDegree.isEmpty else {
             auth.showMessage("İş yeri, vəzifə, elmi dərəcə və ixtisas sahəsini seçin.")
             return
         }
@@ -790,7 +1197,7 @@ private func validate(_ fields: [(String, ValidatorType)], onError: (String) -> 
     return true
 }
 
-private enum ElmiYolStyle {
+ enum ElmiYolStyle {
     static let background = Color(red: 0.97, green: 0.98, blue: 1)
     static let primary = Color(red: 0.16, green: 0.38, blue: 0.92)
     static let navy = Color(red: 0.09, green: 0.18, blue: 0.42)

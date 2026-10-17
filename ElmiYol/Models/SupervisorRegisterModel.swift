@@ -19,6 +19,9 @@ struct SupervisorRegisterModel {
     var password: String = ""
     var confirmPassword: String = ""
     var acceptedTerms: Bool = false
+    
+    var workplaceId: String = ""
+    var facultyId: String = ""     
 
     var isComplete: Bool {
         !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !phone.isEmpty &&
