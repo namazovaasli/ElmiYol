@@ -142,7 +142,6 @@ final class LoginViewController: UIViewController, ASAuthorizationControllerDele
         return stack
     }()
 
-    private let appleButton = SocialLoginButton(imageName: "apple_icon", title: "Apple ilə")
     private let googleButton = SocialLoginButton(imageName: "google_icon", title: "Google ilə")
     private let emailCodeButton = SocialLoginButton(imageName: "envelope", title: "E-poçt linki")
     private var didNavigate = false
@@ -181,7 +180,6 @@ final class LoginViewController: UIViewController, ASAuthorizationControllerDele
         view.addSubview(dividerLabel)
         view.addSubview(dividerRightLine)
 
-        socialButtonsStack.addArrangedSubview(appleButton)
         socialButtonsStack.addArrangedSubview(googleButton)
         socialButtonsStack.addArrangedSubview(emailCodeButton)
         view.addSubview(socialButtonsStack)
@@ -301,9 +299,6 @@ final class LoginViewController: UIViewController, ASAuthorizationControllerDele
             self?.handleForgotPassword()
         }, for: .touchUpInside)
         
-        appleButton.onTap = { [weak self] in
-            self?.handleAppleLogin()
-        }
         googleButton.onTap = { [weak self] in
             self?.handleGoogleLogin()
         }
@@ -453,7 +448,7 @@ final class LoginViewController: UIViewController, ASAuthorizationControllerDele
             presentAuthMessage("Tətbiq pəncərəsi tapılmadı. Yenidən cəhd edin.", title: "Xəta")
             return
         }
-        AuthCoordinator.route(user: user, in: window) { [weak self] error in
+        FirebaseAuthService.AuthCoordinator.route(user: user, in: window) { [weak self] error in
             self?.presentAuthError(error)
         }
     }

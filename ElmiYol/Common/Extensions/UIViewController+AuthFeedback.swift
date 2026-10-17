@@ -6,8 +6,7 @@ extension UIViewController {
         let message: String
         if let configurationError = error as? FirebaseAuthServiceError {
             message = configurationError.localizedDescription
-        } else if let authError = error as? NSError,
-                  let code = AuthErrorCode(rawValue: authError.code) {
+        } else if let code = AuthErrorCode(rawValue: (error as NSError).code) {
             switch code {
             case .invalidEmail:
                 message = "E-poçt ünvanının formatı yanlışdır."

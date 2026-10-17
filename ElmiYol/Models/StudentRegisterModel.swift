@@ -20,6 +20,11 @@ struct StudentRegisterModel {
         var password: String = ""
         var confirmPassword: String = ""
         var acceptedTerms: Bool = false
+    
+    
+        var universityId: String = ""
+        var facultyId: String = ""
+        var specialityId: String = ""
 
     var isComplete: Bool {
         !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !phone.isEmpty && !university.isEmpty && !faculty.isEmpty && !speciality.isEmpty && !groupNumber.isEmpty && !studyYears.isEmpty && (password.isEmpty || password == confirmPassword) && acceptedTerms

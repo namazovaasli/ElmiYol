@@ -1,9 +1,20 @@
+import FirebaseCore
 import SwiftUI
 
 @main
 struct ElmiYolApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @StateObject private var auth = AuthManager()
+    @StateObject private var auth: AuthManager
+
+    init() {
+      
+        if FirebaseApp.app() == nil,
+           let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+           let options = FirebaseOptions(contentsOfFile: path) {
+            FirebaseApp.configure(options: options)
+        }
+        _auth = StateObject(wrappedValue: AuthManager())
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -11,11 +22,6 @@ struct ElmiYolApp: App {
                 .environmentObject(auth)
                 .preferredColorScheme(.light)
                 .onOpenURL { auth.handleIncomingURL($0) }
-                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
-                    if let url = activity.webpageURL {
-                        auth.handleIncomingURL(url)
-                    }
-                }
         }
     }
 }

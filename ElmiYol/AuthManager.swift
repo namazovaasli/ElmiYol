@@ -6,7 +6,7 @@ import GoogleSignIn
 import Security
 import SwiftUI
 import UIKit
-public import Combine
+import Combine
 
 enum AuthFlowDestination: Hashable {
     case login
@@ -27,7 +27,7 @@ final class AuthManager: ObservableObject {
     @Published var alertMessage: String?
     @Published var isEmailPromptPresented = false
     @Published var emailForEmailLink = ""
-
+    
     private var currentNonce: String?
     private var providerFirstName = ""
     private var providerLastName = ""
@@ -35,34 +35,34 @@ final class AuthManager: ObservableObject {
     private var authListener: AuthStateDidChangeListenerHandle?
     private var profileLoadGeneration = 0
     private var registrationInProgress = false
-
+    
     var isCompletingOAuthProfile: Bool {
         user != nil && needsRoleSelection
     }
-
+    
     var registrationEmail: String {
         user?.email ?? ""
     }
-
+    
     var registrationFirstName: String {
         if !providerFirstName.isEmpty { return providerFirstName }
         guard let name = user?.displayName else { return "" }
         return name.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? ""
     }
-
+    
     var registrationLastName: String {
         if !providerLastName.isEmpty { return providerLastName }
         guard let name = user?.displayName else { return "" }
         let pieces = name.split(whereSeparator: \.isWhitespace)
         return pieces.dropFirst().joined(separator: " ")
     }
-
+    
     init() {
         guard FirebaseAuthService.shared.isConfigured else {
             isResolvingSession = false
             return
         }
-
+        
         user = FirebaseAuthService.shared.currentUser
         authListener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             Task { @MainActor [weak self] in
@@ -70,30 +70,30 @@ final class AuthManager: ObservableObject {
             }
         }
     }
-
+    
     deinit {
         if let authListener {
             Auth.auth().removeStateDidChangeListener(authListener)
         }
     }
-
+    
     func signIn(email: String, password: String) async {
         await performAuthAction {
             let user = try await Self.signIn(email: email.trimmingCharacters(in: .whitespacesAndNewlines), password: password)
             await self.resolveProfile(for: user)
         }
     }
-
+    
     func signInWithGoogle() async {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
-            show(FirebaseAuthServiceError.firebaseNotConfigured)
+            show(FirebaseAuthServiceError.googleSignInNotConfigured)
             return
         }
         guard let presenter = Self.topViewController() else {
             showMessage("Google giriş pəncərəsini açmaq mümkün olmadı.")
             return
         }
-
+        
         await performAuthAction {
             GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
             let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presenter)
@@ -109,7 +109,7 @@ final class AuthManager: ObservableObject {
             await self.resolveProfile(for: signedInUser)
         }
     }
-
+    
     func prepareAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         guard let nonce = Self.randomNonce() else {
             currentNonce = nil
@@ -120,7 +120,7 @@ final class AuthManager: ObservableObject {
         request.requestedScopes = [.fullName, .email]
         request.nonce = Self.sha256(nonce)
     }
-
+    
     func handleApple(_ result: Result<ASAuthorization, Error>) async {
         guard case .success(let authorization) = result,
               let appleUser = authorization.credential as? ASAuthorizationAppleIDCredential,
@@ -140,7 +140,7 @@ final class AuthManager: ObservableObject {
             providerFirstName = name.givenName ?? ""
             providerLastName = name.familyName ?? ""
         }
-
+        
         await performAuthAction {
             let credential = OAuthProvider.appleCredential(
                 withIDToken: idToken,
@@ -151,14 +151,14 @@ final class AuthManager: ObservableObject {
             await self.resolveProfile(for: signedInUser)
         }
     }
-
+    
     func sendPasswordReset(to email: String) async {
         await performAuthAction {
             try await Self.sendPasswordReset(to: email.trimmingCharacters(in: .whitespacesAndNewlines))
             self.showMessage("Şifrəni yeniləmək üçün təlimat e-poçtunuza göndərildi.")
         }
     }
-
+    
     func sendEmailSignInLink(to email: String) async {
         await performAuthAction {
             try await Self.sendEmailSignInLink(to: email.trimmingCharacters(in: .whitespacesAndNewlines))
@@ -166,7 +166,7 @@ final class AuthManager: ObservableObject {
             self.showMessage("Giriş bağlantısı e-poçt ünvanınıza göndərildi. Bağlantını bu cihazda açın.")
         }
     }
-
+    
     func registerStudent(_ model: StudentRegisterModel) async {
         await performAuthAction {
             self.registrationInProgress = true
@@ -174,7 +174,8 @@ final class AuthManager: ObservableObject {
             let user = try await Self.register(
                 email: model.email,
                 password: model.password,
-                profileFields: FirebaseAuthService.shared.profileFields(for: model)
+                profileFields: FirebaseAuthService.shared.profileFields(for: model),
+                publicFields: FirebaseAuthService.shared.publicProfileFields(for: model)
             )
             var savedModel = model
             savedModel.password = ""
@@ -189,7 +190,7 @@ final class AuthManager: ObservableObject {
             self.path = []
         }
     }
-
+    
     func registerSupervisor(_ model: SupervisorRegisterModel) async {
         await performAuthAction {
             self.registrationInProgress = true
@@ -197,7 +198,8 @@ final class AuthManager: ObservableObject {
             let user = try await Self.register(
                 email: model.email,
                 password: model.password,
-                profileFields: FirebaseAuthService.shared.profileFields(for: model)
+                profileFields: FirebaseAuthService.shared.profileFields(for: model),
+                publicFields: FirebaseAuthService.shared.publicProfileFields(for: model)
             )
             var savedModel = model
             savedModel.password = ""
@@ -212,7 +214,7 @@ final class AuthManager: ObservableObject {
             self.path = []
         }
     }
-
+    
     func signOut() {
         do {
             try FirebaseAuthService.shared.signOut()
@@ -228,11 +230,11 @@ final class AuthManager: ObservableObject {
             show(error)
         }
     }
-
+    
     func handleIncomingURL(_ url: URL) {
         if GIDSignIn.sharedInstance.handle(url) { return }
         guard FirebaseAuthService.shared.isEmailSignInLink(url) else { return }
-
+        
         incomingEmailLink = url.absoluteString
         if let savedEmail = UserDefaults.standard.string(forKey: FirebaseAuthService.pendingEmailKey) {
             Task { await completeEmailSignIn(email: savedEmail) }
@@ -241,27 +243,27 @@ final class AuthManager: ObservableObject {
             isEmailPromptPresented = true
         }
     }
-
+    
     func handleIncomingActivity(_ activity: NSUserActivity) {
         guard activity.activityType == NSUserActivityTypeBrowsingWeb,
               let url = activity.webpageURL else { return }
         handleIncomingURL(url)
     }
-
+    
     func completeEmailSignInFromPrompt() {
         Task { await completeEmailSignIn(email: emailForEmailLink) }
     }
-
+    
     func dismissEmailPrompt() {
         incomingEmailLink = nil
         isEmailPromptPresented = false
     }
-
+    
     func showMessage(_ message: String, title: String = "ElmiYol") {
         alertTitle = title
         alertMessage = message
     }
-
+    
     private func completeEmailSignIn(email: String) async {
         guard let link = incomingEmailLink else { return }
         await performAuthAction {
@@ -271,7 +273,7 @@ final class AuthManager: ObservableObject {
             await self.resolveProfile(for: user)
         }
     }
-
+    
     private func receiveAuthState(_ user: User?) async {
         self.user = user
         guard let user else {
@@ -286,7 +288,7 @@ final class AuthManager: ObservableObject {
         if registrationInProgress { return }
         await resolveProfile(for: user)
     }
-
+    
     private func resolveProfile(for user: User) async {
         profileLoadGeneration += 1
         let generation = profileLoadGeneration
@@ -313,7 +315,7 @@ final class AuthManager: ObservableObject {
             isResolvingSession = false
         }
     }
-
+    
     private func performAuthAction(_ action: () async throws -> Void) async {
         guard !isBusy else { return }
         isBusy = true
@@ -324,11 +326,11 @@ final class AuthManager: ObservableObject {
             show(error)
         }
     }
-
+    
     private func show(_ error: Error) {
         showMessage(error.localizedDescription, title: "Giriş alınmadı")
     }
-
+    
     private static func signIn(email: String, password: String) async throws -> User {
         try await withCheckedThrowingContinuation { continuation in
             FirebaseAuthService.shared.signIn(email: email, password: password) { result in
@@ -336,7 +338,7 @@ final class AuthManager: ObservableObject {
             }
         }
     }
-
+    
     private static func signIn(with credential: AuthCredential) async throws -> User {
         try await withCheckedThrowingContinuation { continuation in
             FirebaseAuthService.shared.signIn(with: credential) { result in
@@ -344,41 +346,65 @@ final class AuthManager: ObservableObject {
             }
         }
     }
-
-    private static func register(email: String, password: String, profileFields: [String: Any]) async throws -> User {
-        try await withCheckedThrowingContinuation { continuation in
-            FirebaseAuthService.shared.register(email: email, password: password, profileFields: profileFields) { result in
+    
+    private static func register(
+        email: String,
+        password: String,
+        profileFields: [String: Any],
+        publicFields: [String: Any]
+    ) async throws -> User {
+        try await withCheckedThrowingContinuation {
+            continuation in
+            FirebaseAuthService.shared.register(
+                email: email,
+                password: password,
+                profileFields: profileFields,
+                publicFields: publicFields
+            ) { result in
                 continuation.resume(with: result)
             }
         }
     }
-
-    private static func loadProfile(for user: User) async throws -> FirebaseUserProfile? {
-        try await withCheckedThrowingContinuation { continuation in
+    
+    private static func loadProfile(
+        for user: User
+    ) async throws -> FirebaseUserProfile? {
+        try await withCheckedThrowingContinuation {
+            (continuation: CheckedContinuation<FirebaseUserProfile?, Error>) in
+            
             FirebaseAuthService.shared.loadProfile(for: user) { result in
                 continuation.resume(with: result)
             }
         }
     }
-
     private static func sendPasswordReset(to email: String) async throws {
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation {
+            (continuation: CheckedContinuation<Void, Error>) in
+            
             FirebaseAuthService.shared.sendPasswordReset(to: email) { error in
-                if let error { continuation.resume(throwing: error) }
-                else { continuation.resume(returning: ()) }
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
             }
         }
     }
-
+    
     private static func sendEmailSignInLink(to email: String) async throws {
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation {
+            (continuation: CheckedContinuation<Void, Error>) in
+            
             FirebaseAuthService.shared.sendEmailSignInLink(to: email) { error in
-                if let error { continuation.resume(throwing: error) }
-                else { continuation.resume(returning: ()) }
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
             }
         }
     }
-
+    
     private static func completeEmailSignIn(email: String, link: String) async throws -> User {
         try await withCheckedThrowingContinuation { continuation in
             FirebaseAuthService.shared.completeEmailSignIn(email: email, link: link) { result in
@@ -386,12 +412,12 @@ final class AuthManager: ObservableObject {
             }
         }
     }
-
+    
     private static func require<T>(_ value: T?, message: String) throws -> T {
         guard let value else { throw AuthManagerError.missingProviderToken(message) }
         return value
     }
-
+    
     private static func topViewController() -> UIViewController? {
         let root = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
@@ -403,7 +429,7 @@ final class AuthManager: ObservableObject {
         }
         return top
     }
-
+    
     private static func randomNonce(length: Int = 32) -> String? {
         let characters = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
         var bytes = [UInt8](repeating: 0, count: length)
@@ -412,7 +438,7 @@ final class AuthManager: ObservableObject {
         }
         return bytes.map { characters[Int($0) % characters.count] }.reduce(into: "") { $0.append($1) }
     }
-
+    
     private static func sha256(_ value: String) -> String {
         SHA256.hash(data: Data(value.utf8)).map { String(format: "%02x", $0) }.joined()
     }
@@ -420,7 +446,7 @@ final class AuthManager: ObservableObject {
 
 private enum AuthManagerError: LocalizedError {
     case missingProviderToken(String)
-
+    
     var errorDescription: String? {
         if case .missingProviderToken(let message) = self { return message }
         return nil
