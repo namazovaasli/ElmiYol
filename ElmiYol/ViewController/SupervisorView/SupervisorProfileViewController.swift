@@ -51,6 +51,7 @@ final class SupervisorProfileViewController: UIViewController {
 
     private func setupView() {
         view.addSubview(scrollView)
+        scrollView.contentInsetAdjustmentBehavior = .always
         scrollView.addSubview(contentView)
         contentView.addSubview(headerView)
         contentView.addSubview(titleLabel)
@@ -59,16 +60,18 @@ final class SupervisorProfileViewController: UIViewController {
         let profileCard = makeProfileCard()
         contentView.addSubview(profileCard)
 
+        let s = UserSession.shared.supervisorData
         let infoSection = makeInfoSection(
             title: "Əsas məlumatlar",
             rows: [
-                ("briefcase.fill", "Vəzifə", "Professor"),
-                ("building.2.fill", "İş yeri", "Bakı Dövlət Universiteti"),
-                ("books.vertical.fill", "Kafedra", "İnformasiya texnologiyaları"),
-                ("graduationcap.fill", "Elmi dərəcə", "Texnika elmləri doktoru"),
-                ("calendar", "İşə başlama tarixi", "15 Sentyabr 2012")
+                ("briefcase.fill", "Vəzifə", s?.position ?? "—"),
+                ("building.2.fill", "İş yeri", s?.workplace ?? "—"),
+                ("books.vertical.fill", "Fakültə", s?.faculty ?? "—"),
+                ("book.fill", "İxtisas sahəsi", s?.specialityField ?? "—"),
+                ("graduationcap.fill", "Elmi dərəcə", s?.academicDegree ?? "—")
             ]
         )
+        
         contentView.addSubview(infoSection)
 
         let statsSection = makeStatsSection()
@@ -115,7 +118,7 @@ final class SupervisorProfileViewController: UIViewController {
             make.width.equalTo(scrollView)
         }
         headerView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(8)
+            make.top.equalToSuperview().offset(8)
             make.leading.trailing.equalToSuperview().inset(20)
         }
         titleLabel.snp.makeConstraints { make in
@@ -156,7 +159,7 @@ final class SupervisorProfileViewController: UIViewController {
             make.width.height.equalTo(14)
         }
 
-        let name = UserSession.shared.displayFullName.isEmpty ? "Prof. İlqar Məmmədov" : UserSession.shared.displayFullName
+        let name = UserSession.shared.displayFullName.isEmpty ? "İstifadəçi" : UserSession.shared.displayFullName
         let nameLabel = UILabel()
         nameLabel.text = name
         nameLabel.font = .systemFont(ofSize: 18, weight: .bold)
@@ -171,12 +174,12 @@ final class SupervisorProfileViewController: UIViewController {
         roleBadge.clipsToBounds = true
 
         let emailLabel = UILabel()
-        emailLabel.text = "✉ ilqar.mammadov@bdu.edu.az"
+        emailLabel.text = "✉ \(UserSession.shared.displayEmail)"
         emailLabel.font = .systemFont(ofSize: 13)
         emailLabel.textColor = AppColors.textSecondary
 
         let phoneLabel = UILabel()
-        phoneLabel.text = "📞 +994 50 123 45 67"
+        phoneLabel.text = "📞 \(UserSession.shared.displayPhone)"
         phoneLabel.font = .systemFont(ofSize: 13)
         phoneLabel.textColor = AppColors.textSecondary
 
@@ -317,6 +320,7 @@ final class SupervisorProfileViewController: UIViewController {
 
     private func makeSettingsSection() -> UIView {
         makeInfoSection(title: "Parametrlər", rows: [
+            ("person.crop.circle.fill", "Hesab məlumatları", ""),
             ("bell.fill", "Bildiriş parametrləri", ""),
             ("lock.fill", "Təhlükəsizlik", ""),
             ("globe", "Dil", "Azərbaycan dili"),
@@ -359,9 +363,14 @@ final class SupervisorProfileViewController: UIViewController {
             make.top.bottom.equalToSuperview().inset(14)
         }
         if !value.isEmpty {
+            valueLabel.numberOfLines = 2
+            valueLabel.textAlignment = .right
+            valueLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+            titleLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
             valueLabel.snp.makeConstraints { make in
                 make.centerY.equalToSuperview()
                 make.trailing.equalTo(chevron.snp.leading).offset(-8)
+                make.leading.greaterThanOrEqualTo(titleLabel.snp.trailing).offset(12)
             }
         }
         if title != "Çıxış" {

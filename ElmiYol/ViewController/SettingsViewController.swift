@@ -61,6 +61,7 @@ final class SettingsViewController: UIViewController {
 
     private func setupView() {
         view.addSubview(scrollView)
+        scrollView.contentInsetAdjustmentBehavior = .always
         scrollView.addSubview(contentView)
         contentView.addSubview(backButton)
         contentView.addSubview(titleLabel)
@@ -98,7 +99,7 @@ final class SettingsViewController: UIViewController {
             make.width.equalTo(scrollView)
         }
         backButton.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(8)
+            make.top.equalToSuperview().offset(8)
             make.leading.equalToSuperview().offset(20)
             make.width.height.equalTo(48)
         }
@@ -190,10 +191,19 @@ final class SettingsViewController: UIViewController {
             make.trailing.bottom.equalToSuperview()
             make.height.equalTo(1)
         }
-
+        if title == "Hesab məlumatları" {
+            row.isUserInteractionEnabled = true
+            row.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(openAccountInfo)))
+        }
+        
         return row
     }
-
+    
+    @objc
+    private func openAccountInfo() {
+        pushAccountInfo()
+    }
+    
     private func handleBackTap() {
         guard !didNavigate else { return }
         didNavigate = true

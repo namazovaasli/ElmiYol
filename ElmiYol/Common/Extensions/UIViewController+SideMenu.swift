@@ -9,7 +9,6 @@ import UIKit
 
 extension UIViewController {
 
-    
     func presentSideMenu(current: SideMenuItem, delegate: SideMenuViewControllerDelegate) {
         let menu = SideMenuViewController()
         menu.currentItem = current

@@ -7,8 +7,12 @@
 
 import UIKit
 import SnapKit
+import FirebaseAuth
+import FirebaseFirestore
+
 
 private struct MessageThreadItem {
+    let otherUid: String
     let name: String
     let preview: String
     let time: String
@@ -28,6 +32,7 @@ final class StudentMessagesViewController: UIViewController {
     private var currentFilter: MessageFilter = .all
     private var didNavigate = false
     private var allThreads: [MessageThreadItem] = []
+    private var listener: ListenerRegistration?
 
     private let scrollView: UIScrollView = {
         let sv = UIScrollView()
@@ -115,11 +120,11 @@ final class StudentMessagesViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = AppColors.background
         headerView.delegate = self
-        loadSampleData()
         setupView()
         setupConstraints()
         setupActions()
         reloadThreads()
+        startListening()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -236,21 +241,32 @@ final class StudentMessagesViewController: UIViewController {
             self?.reloadThreads()
         }, for: .touchUpInside)
 
-        newMessageButton.addAction(UIAction { [weak self] _ in
-            self?.handleNewMessageTap()
-        }, for: .touchUpInside)
-
         updateFilters()
     }
 
-    private func handleNewMessageTap() {
-        guard !didNavigate else { return }
-        didNavigate = true
-        openChat(with: "Prof. Dr. İlqar Məmmədov", subtitle: "Elmi rəhbər")
+    deinit { listener?.remove() }
+
+    private func startListening() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        listener = ChatRepository.shared.listenThreads(for: uid) { [weak self] threads in
+            self?.allThreads = threads.map {
+                MessageThreadItem(
+                    otherUid: $0.otherUid,
+                    name: $0.otherName,
+                    preview: $0.lastMessage,
+                    time: $0.timeText,
+                    unreadCount: $0.unread,
+                    isOnline: false,
+                    avatarColor: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
+                )
+            }
+            self?.reloadThreads()
+        }
     }
 
-    private func openChat(with name: String, subtitle: String) {
-        let chatVC = ChatDetailViewController(personName: name, personSubtitle: subtitle)
+
+    private func openChat(uid: String, name: String, subtitle: String) {
+        let chatVC = ChatDetailViewController(otherUid: uid, personName: name, personSubtitle: subtitle)
         chatVC.hidesBottomBarWhenPushed = true
         navigationController?.pushViewControllerWithFade(chatVC)
     }
@@ -261,13 +277,7 @@ final class StudentMessagesViewController: UIViewController {
         starredFilterButton.setSelected(currentFilter == .starred)
     }
 
-    private func loadSampleData() {
-        allThreads = [
-            MessageThreadItem(name: "Prof. Dr. İlqar Məmmədov", preview: "Dissertasiya planınıza baxdım, bir neçə düzəliş...", time: "09:20", unreadCount: 1, isOnline: true, avatarColor: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)),
-            MessageThreadItem(name: "Prof. Dr. Aygün Əliyeva", preview: "Növbəti görüş üçün vaxt təyin edək.", time: "Dünən", unreadCount: 0, isOnline: false, avatarColor: UIColor(red: 0.93, green: 0.9, blue: 1, alpha: 1)),
-            MessageThreadItem(name: "ElmiYol Sistemi", preview: "Tədqiqat planınız təsdiq edildi.", time: "2 gün əvvəl", unreadCount: 1, isOnline: false, avatarColor: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1))
-        ]
-    }
+   
 
     private func reloadThreads() {
         threadsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
@@ -287,8 +297,7 @@ final class StudentMessagesViewController: UIViewController {
             row.onTap = { [weak self] in
                 guard let self, !self.didNavigate else { return }
                 self.didNavigate = true
-                let subtitle = item.name.contains("Sistemi") ? "Sistem mesajı" : "Elmi rəhbər"
-                self.openChat(with: item.name, subtitle: subtitle)
+                self.openChat(uid: item.otherUid, name: item.name, subtitle: "Elmi rəhbər")
             }
             threadsStackView.addArrangedSubview(row)
         }

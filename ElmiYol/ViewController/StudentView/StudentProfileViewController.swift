@@ -52,6 +52,7 @@ final class StudentProfileViewController: UIViewController {
 
     private func setupView() {
         view.addSubview(scrollView)
+        scrollView.contentInsetAdjustmentBehavior = .always
         scrollView.addSubview(contentView)
 
         contentView.addSubview(headerView)
@@ -61,19 +62,16 @@ final class StudentProfileViewController: UIViewController {
         let profileCard = makeProfileCard()
         contentView.addSubview(profileCard)
 
+        let s = UserSession.shared.studentData
         let academicSection = makeInfoSection(
             title: "Akademik məlumatlar",
             rows: [
-                ("building.2.fill", "Universitet", "Bakı Dövlət Universiteti"),
-                ("books.vertical.fill", "Fakültə", "Riyaziyyat və Mexanika"),
-                ("graduationcap.fill", "İxtisas", "Kompüter elmləri"),
+                ("building.2.fill", "Universitet", s?.university ?? "—"),
+                ("books.vertical.fill", "Fakültə", s?.faculty ?? "—"),
+                ("graduationcap.fill", "İxtisas", s?.speciality ?? "—"),
                 ("chart.bar.fill", "Səviyyə", "Magistratura"),
-                ("brain.head.profile", "İxtisaslaşma", "Süni intellekt"),
-                ("person.3.fill", "Qrup", "M-24"),
-                ("clock.fill", "Təhsil forması", "Əyani"),
-                ("globe", "Təhsil dili", "Azərbaycan dili"),
-                ("calendar", "Qəbul ili", "2024"),
-                ("flag.fill", "Təxmini bitirmə", "2026")
+                ("person.3.fill", "Qrup", s?.groupNumber ?? "—"),
+                ("calendar", "Təhsil illəri", s?.studyYears ?? "—")
             ]
         )
         contentView.addSubview(academicSection)
@@ -84,6 +82,7 @@ final class StudentProfileViewController: UIViewController {
         let settingsSection = makeInfoSection(
             title: "Parametrlər",
             rows: [
+                ("person.crop.circle.fill", "Hesab məlumatları", ""),
                 ("bell.fill", "Bildiriş parametrləri", ""),
                 ("lock.fill", "Təhlükəsizlik", ""),
                 ("globe", "Dil", "Azərbaycan dili"),
@@ -132,7 +131,7 @@ final class StudentProfileViewController: UIViewController {
             make.width.equalTo(scrollView)
         }
         headerView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(8)
+            make.top.equalToSuperview().offset(8)
             make.leading.trailing.equalToSuperview().inset(20)
         }
         titleLabel.snp.makeConstraints { make in
@@ -173,7 +172,7 @@ final class StudentProfileViewController: UIViewController {
             make.width.height.equalTo(14)
         }
 
-        let name = UserSession.shared.displayFullName.isEmpty ? "Əsli Namazova" : UserSession.shared.displayFullName
+        let name = UserSession.shared.displayFullName.isEmpty ? "İstifadəçi" : UserSession.shared.displayFullName
         let nameLabel = UILabel()
         nameLabel.text = name
         nameLabel.font = .systemFont(ofSize: 18, weight: .bold)
@@ -188,12 +187,12 @@ final class StudentProfileViewController: UIViewController {
         roleBadge.clipsToBounds = true
 
         let emailLabel = UILabel()
-        emailLabel.text = "✉ aslinamazova@bdu.edu.az"
+        emailLabel.text = "✉ \(UserSession.shared.displayEmail)"
         emailLabel.font = .systemFont(ofSize: 13)
         emailLabel.textColor = AppColors.textSecondary
 
         let phoneLabel = UILabel()
-        phoneLabel.text = "📞 +994 50 123 45 67"
+        phoneLabel.text = "📞 \(UserSession.shared.displayPhone)"
         phoneLabel.font = .systemFont(ofSize: 13)
         phoneLabel.textColor = AppColors.textSecondary
 
@@ -343,7 +342,7 @@ final class StudentProfileViewController: UIViewController {
                 title: row.1,
                 value: row.2,
                 isLogout: isLogoutLast && index == rows.count - 1,
-                onTap: { [weak self] in
+                onTap: isLogoutLast ? { [weak self] in
                     guard let self, !self.didNavigate else { return }
                     if row.1 == "Çıxış" {
                         self.presentLogoutConfirmation()
@@ -351,7 +350,7 @@ final class StudentProfileViewController: UIViewController {
                     }
                     self.didNavigate = true
                     self.handleProfileSettingsRowTap(row.1)
-                }
+                } : nil
             ))
         }
 
@@ -407,11 +406,17 @@ final class StudentProfileViewController: UIViewController {
             make.top.bottom.equalToSuperview().inset(14)
         }
         if !value.isEmpty {
+            valueLabel.numberOfLines = 2
+            valueLabel.textAlignment = .right
+            valueLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+            titleLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
             valueLabel.snp.makeConstraints { make in
                 make.centerY.equalToSuperview()
                 make.trailing.equalTo(chevron.snp.leading).offset(-8)
+                make.leading.greaterThanOrEqualTo(titleLabel.snp.trailing).offset(12)
             }
         }
+        
         if !isLogout {
             chevron.snp.makeConstraints { make in
                 make.trailing.equalToSuperview().offset(-16)

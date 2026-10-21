@@ -23,8 +23,21 @@ final class MainTabBarController: UITabBarController {
         setupAppearance()
         delegate = self
         AppRouter.shared.navigationController = selectedViewController as? UINavigationController
+        UnreadMessagesObserver.shared.start()
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshMessagesBadge), name: .unreadMessagesChanged, object: nil)
+        refreshMessagesBadge()
+    }
+    @objc private func refreshMessagesBadge() {
+        let count = UserSession.shared.unreadMessagesCount
+        guard let items = viewControllers, items.count > 3 else { return }
+        items[3].tabBarItem.badgeValue = count > 0 ? "\(count)" : nil
+        items[3].tabBarItem.badgeColor = AppColors.badgeRed
     }
 
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     private func setupTabs() {
         switch roleContext {
         case .student:
@@ -32,7 +45,7 @@ final class MainTabBarController: UITabBarController {
                 makeNav(root: StudentHomeViewController(), title: "Ana səhifə", image: "house", selectedImage: "house.fill"),
                 makeNav(root: StudentResearchViewController(), title: "Tədqiqatlar", image: "folder", selectedImage: "folder.fill"),
                 makeNav(root: StudentMeetingsViewController(), title: "Görüşlər", image: "calendar", selectedImage: "calendar"),
-                makeNav(root: StudentMessagesViewController(), title: "Mesajlar", image: "bubble.left.and.bubble.right", selectedImage: "bubble.left.and.bubble.right.fill", badge: "2"),
+                makeNav(root: MessagesHostingController(), title: "Mesajlar", image: "bubble.left.and.bubble.right", selectedImage: "bubble.left.and.bubble.right.fill"),
                 makeNav(root: StudentProfileViewController(), title: "Profil", image: "person", selectedImage: "person.fill")
             ]
         case .supervisor:
@@ -40,7 +53,7 @@ final class MainTabBarController: UITabBarController {
                 makeNav(root: SupervisorHomeViewController(), title: "Ana səhifə", image: "house", selectedImage: "house.fill"),
                 makeNav(root: SupervisorResearchViewController(), title: "Tədqiqatlar", image: "folder", selectedImage: "folder.fill"),
                 makeNav(root: SupervisorMeetingsViewController(), title: "Görüşlər", image: "calendar", selectedImage: "calendar"),
-                makeNav(root: SupervisorMessagesViewController(), title: "Mesajlar", image: "bubble.left.and.bubble.right", selectedImage: "bubble.left.and.bubble.right.fill", badge: "2"),
+                makeNav(root: MessagesHostingController(), title: "Mesajlar", image: "bubble.left.and.bubble.right", selectedImage: "bubble.left.and.bubble.right.fill"),
                 makeNav(root: SupervisorProfileViewController(), title: "Profil", image: "person", selectedImage: "person.fill")
             ]
         }

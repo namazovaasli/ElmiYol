@@ -179,10 +179,12 @@ final class BaseTextField: UIView {
     }
 
     private func runLiveValidation() {
-       
-        if isValidValue == false {
-            _ = validate(showError: true)
+        guard validator != nil else { return }
+        if (textField.text ?? "").isEmpty && isValidValue {
+            setErrorState(false, message: nil)
+            return
         }
+        _ = validate(showError: true)
     }
 
     @discardableResult

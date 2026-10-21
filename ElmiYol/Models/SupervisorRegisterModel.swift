@@ -8,21 +8,23 @@
 import Foundation
 
 struct SupervisorRegisterModel {
-    var firstName: String = ""
-    var lastName: String = ""
-    var email: String = ""
-    var phone: String = ""
-    var workplace: String = ""
-    var position: String = ""
-    var academicDegree: String = ""
-    var specialityField: String = ""
-    var password: String = ""
-    var confirmPassword: String = ""
-    var acceptedTerms: Bool = false
-    
-    var workplaceId: String = ""
-    var facultyId: String = ""     
+    var firstName = ""
+    var lastName = ""
+    var email = ""
+    var phone = ""
+    var workplace = ""
+    var position = ""
+    var academicDegree = ""
+    var specialityField = ""
+    var password = ""
+    var confirmPassword = ""
+    var acceptedTerms = false
 
+    var workplaceId = ""
+    var facultyId = ""
+    var faculty = ""
+    var specialityId = ""
+    
     var isComplete: Bool {
         !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !phone.isEmpty &&
         !workplace.isEmpty && !position.isEmpty && !academicDegree.isEmpty && !specialityField.isEmpty &&

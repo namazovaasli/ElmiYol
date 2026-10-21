@@ -4,27 +4,25 @@
 //
 //  Created by Əsli Namazova on 15.07.26.
 //
-
 import Foundation
 
 struct StudentRegisterModel {
-        var firstName: String = ""
-        var lastName: String = ""
-        var email: String = ""
-        var phone: String = ""
-        var university: String = ""
-        var faculty: String = ""
-        var speciality: String = ""
-        var groupNumber: String = ""
-        var studyYears: String = ""
-        var password: String = ""
-        var confirmPassword: String = ""
-        var acceptedTerms: Bool = false
-    
-    
-        var universityId: String = ""
-        var facultyId: String = ""
-        var specialityId: String = ""
+    var firstName = ""
+    var lastName = ""
+    var email = ""
+    var phone = ""
+    var university = ""
+    var faculty = ""
+    var speciality = ""
+    var groupNumber = ""
+    var studyYears = ""
+    var password = ""
+    var confirmPassword = ""
+    var acceptedTerms = false
+
+    var universityId = ""
+    var facultyId = ""
+    var specialityId = ""
 
     var isComplete: Bool {
         !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !phone.isEmpty && !university.isEmpty && !faculty.isEmpty && !speciality.isEmpty && !groupNumber.isEmpty && !studyYears.isEmpty && (password.isEmpty || password == confirmPassword) && acceptedTerms

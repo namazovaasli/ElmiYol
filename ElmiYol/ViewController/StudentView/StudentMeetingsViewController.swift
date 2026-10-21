@@ -130,6 +130,7 @@ class StudentMeetingsViewController: UIViewController {
 
     private func setupView() {
         view.addSubview(scrollView)
+        scrollView.contentInsetAdjustmentBehavior = .always
         scrollView.addSubview(contentView)
 
         contentView.addSubview(headerView)
@@ -256,7 +257,7 @@ class StudentMeetingsViewController: UIViewController {
         }
 
         headerView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(8)
+            make.top.equalToSuperview().offset(8)
             make.leading.trailing.equalToSuperview().inset(20)
         }
 

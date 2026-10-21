@@ -121,6 +121,7 @@ final class MeetingDetailViewController: UIViewController {
 
     private func setupView() {
         view.addSubview(scrollView)
+        scrollView.contentInsetAdjustmentBehavior = .always
         scrollView.addSubview(contentView)
 
         contentView.addSubview(backButton)
@@ -150,7 +151,7 @@ final class MeetingDetailViewController: UIViewController {
         }
 
         backButton.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(8)
+            make.top.equalToSuperview().offset(8)
             make.leading.equalToSuperview().offset(20)
             make.width.height.equalTo(48)
         }
