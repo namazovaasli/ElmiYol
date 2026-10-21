@@ -7,20 +7,23 @@
 
 import UIKit
 import SnapKit
+import FirebaseAuth
+import FirebaseFirestore
+import SafariServices
+import UniformTypeIdentifiers
 
-struct ChatMessage {
-    let text: String
-    let isMine: Bool
-    let timeText: String
-}
 
 final class ChatDetailViewController: UIViewController {
 
+    private let otherUid: String?
     private let personName: String
     private let personSubtitle: String
-    private var messages: [ChatMessage] = []
+    private var messages: [ChatMessageDoc] = []
+    private var listener: ListenerRegistration?
+    private var chatId = ""
 
-    init(personName: String, personSubtitle: String) {
+    init(otherUid: String? = nil, personName: String, personSubtitle: String) {
+        self.otherUid = otherUid
         self.personName = personName
         self.personSubtitle = personSubtitle
         super.init(nibName: nil, bundle: nil)
@@ -113,7 +116,13 @@ final class ChatDetailViewController: UIViewController {
         button.layer.cornerRadius = 20
         return button
     }()
-
+    private let attachButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.tintColor = AppColors.primary
+        button.setImage(UIImage(systemName: "paperclip"), for: .normal)
+        return button
+    }()
+    
     private var didNavigate = false
     private var inputContainerBottomConstraint: Constraint?
 
@@ -123,7 +132,7 @@ final class ChatDetailViewController: UIViewController {
         setupView()
         setupConstraints()
         setupActions()
-        loadSampleMessages()
+        startChat()
         registerKeyboardNotifications()
     }
 
@@ -137,9 +146,87 @@ final class ChatDetailViewController: UIViewController {
         super.viewDidAppear(animated)
         scrollToBottom(animated: false)
     }
-
     deinit {
+        listener?.remove()
         NotificationCenter.default.removeObserver(self)
+    }
+
+    private func startChat() {
+        nameLabel.text = personName
+        subtitleLabel.text = personSubtitle
+
+        guard let me = Auth.auth().currentUser?.uid, let other = otherUid else {
+            inputTextField.isEnabled = false
+            inputTextField.placeholder = "Mesajlar bölməsindən istifadəçi seçin"
+            attachButton.isEnabled = false
+            sendButton.isEnabled = false
+            return
+        }
+
+        chatId = ChatRepository.chatId(me, other)
+
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await ChatRepository.shared.ensureChat(
+                    chatId: chatId, me: me, other: other,
+                    myName: UserSession.shared.displayFullName, otherName: personName
+                )
+                listener = ChatRepository.shared.listenMessages(chatId: chatId) { [weak self] items in
+                    guard let self else { return }
+                    self.messages = items
+                    self.tableView.reloadData()
+                    self.scrollToBottom(animated: false)
+                    Task { await ChatRepository.shared.markRead(chatId: self.chatId, me: me) }
+                }
+            } catch {
+                presentAuthMessage(error.localizedDescription, title: "Xəta")
+            }
+        }
+    }
+
+    private func setBusy(_ busy: Bool) {
+        sendButton.isEnabled = !busy
+        attachButton.isEnabled = !busy
+        sendButton.alpha = busy ? 0.5 : 1
+    }
+
+    private func handleSendTap() {
+        guard let me = Auth.auth().currentUser?.uid, let other = otherUid else { return }
+        let text = (inputTextField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        inputTextField.text = ""
+
+        Task {
+            do {
+                try await ChatRepository.shared.send(chatId: chatId, me: me, other: other, text: text)
+            } catch {
+                inputTextField.text = text
+                presentAuthMessage(error.localizedDescription, title: "Mesaj göndərilmədi")
+            }
+        }
+    }
+
+    private func handleAttachTap() {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+        picker.allowsMultipleSelection = false
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+
+    private func sendFile(_ url: URL) async {
+        guard let me = Auth.auth().currentUser?.uid, let other = otherUid else { return }
+        setBusy(true)
+        defer { setBusy(false) }
+        do {
+            let uploaded = try await SupabaseStorageService.shared.upload(localURL: url, folder: "chats/\(chatId)")
+            try await ChatRepository.shared.send(
+                chatId: chatId, me: me, other: other,
+                kind: .file, filePath: uploaded.path, fileName: uploaded.name
+            )
+        } catch {
+            presentAuthMessage(error.localizedDescription, title: "Fayl göndərilmədi")
+        }
     }
 
     private func setupView() {
@@ -153,7 +240,8 @@ final class ChatDetailViewController: UIViewController {
         view.addSubview(inputContainerView)
         inputContainerView.addSubview(inputTextField)
         inputContainerView.addSubview(sendButton)
-
+        inputContainerView.addSubview(attachButton)
+        
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -208,8 +296,14 @@ final class ChatDetailViewController: UIViewController {
             make.width.height.equalTo(40)
         }
 
+        attachButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(12)
+            make.centerY.equalTo(sendButton)
+            make.width.height.equalTo(32)
+        }
+
         inputTextField.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16)
+            make.leading.equalTo(attachButton.snp.trailing).offset(6)
             make.trailing.equalTo(sendButton.snp.leading).offset(-10)
             make.centerY.equalTo(sendButton)
             make.height.equalTo(40)
@@ -224,6 +318,10 @@ final class ChatDetailViewController: UIViewController {
         sendButton.addAction(UIAction { [weak self] _ in
             self?.handleSendTap()
         }, for: .touchUpInside)
+        
+        attachButton.addAction(UIAction { [weak self] _ in
+            self?.handleAttachTap()
+        }, for: .touchUpInside)
     }
 
     private func handleBackTap() {
@@ -232,26 +330,6 @@ final class ChatDetailViewController: UIViewController {
         navigationController?.popViewControllerWithFade()
     }
 
-    private func handleSendTap() {
-        guard let text = inputTextField.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        let newMessage = ChatMessage(text: text, isMine: true, timeText: "İndi")
-        messages.append(newMessage)
-        inputTextField.text = ""
-        tableView.reloadData()
-        scrollToBottom(animated: true)
-    }
-
-    private func loadSampleMessages() {
-        nameLabel.text = personName
-        subtitleLabel.text = personSubtitle
-
-        messages = [
-            ChatMessage(text: "Salam, tədqiqat planı ilə bağlı rəyinizi bilmək istərdim.", isMine: true, timeText: "09:15"),
-            ChatMessage(text: "Salam! Planınıza baxdım, ümumilikdə yaxşıdır. Bir neçə kiçik düzəliş lazımdır.", isMine: false, timeText: "09:20"),
-            ChatMessage(text: "Çox sağ olun, düzəlişləri edib yenidən göndərəcəyəm.", isMine: true, timeText: "09:22")
-        ]
-        tableView.reloadData()
-    }
 
     private func scrollToBottom(animated: Bool) {
         guard !messages.isEmpty else { return }
@@ -293,6 +371,19 @@ extension ChatDetailViewController: UITableViewDataSource, UITableViewDelegate {
         }
         cell.configure(with: messages[indexPath.row])
         return cell
+    }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let message = messages[indexPath.row]
+        guard message.kind == .file, let path = message.filePath else { return }
+        Task {
+            do {
+                let url = try await SupabaseStorageService.shared.signedURL(path: path)
+                present(SFSafariViewController(url: url), animated: true)
+            } catch {
+                presentAuthMessage("Faylı açmaq mümkün olmadı.", title: "Xəta")
+            }
+        }
     }
 }
 
@@ -356,8 +447,8 @@ final class ChatBubbleCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(with message: ChatMessage) {
-        messageLabel.text = message.text
+    func configure(with message: ChatMessageDoc) {
+        messageLabel.text = message.kind == .file ? "📎 \(message.fileName ?? "Fayl")" : message.text
         timeLabel.text = message.timeText
 
         leadingConstraint?.deactivate()
@@ -384,5 +475,12 @@ final class ChatBubbleCell: UITableViewCell {
                 make.leading.equalToSuperview().offset(16)
             }
         }
+    }
+}
+
+extension ChatDetailViewController: UIDocumentPickerDelegate {
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else { return }
+        Task { await sendFile(url) }
     }
 }

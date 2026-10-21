@@ -7,6 +7,7 @@
 
 import UIKit
 import GoogleSignIn
+import SwiftUI
 
 extension UIViewController {
 
@@ -33,9 +34,19 @@ extension UIViewController {
         }
         UserSession.shared.logout()
     }
-
+    
+    func pushAccountInfo() {
+        let host = UIHostingController(rootView: AccountInfoView(onBack: { [weak self] in
+            self?.navigationController?.popViewControllerWithFade()
+        }))
+        host.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewControllerWithFade(host)
+    }
+    
     func handleProfileSettingsRowTap(_ title: String) {
         switch title {
+        case "Hesab məlumatları":
+            pushAccountInfo()
         case "Bildiriş parametrləri":
             let settingsVC = SettingsViewController()
             settingsVC.hidesBottomBarWhenPushed = true

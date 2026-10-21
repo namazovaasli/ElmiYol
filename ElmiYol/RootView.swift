@@ -17,11 +17,13 @@ struct RootView: View {
                     onSkip: { setLaunchStage(.onboardingSecond) },
                     onContinue: { setLaunchStage(.onboardingSecond) }
                 )
+                .swipeBack { setLaunchStage(.splash) }
             case .onboardingSecond:
                 OnboardingSecondView(
                     onBack: { setLaunchStage(.onboardingFirst) },
                     onFinish: finishOnboarding
                 )
+                .swipeBack { setLaunchStage(.onboardingFirst) }
             case .complete:
                 if let role = auth.role {
                     LegacyMainAppView(role: role)
@@ -51,10 +53,14 @@ struct RootView: View {
             auth.alertTitle,
             isPresented: Binding(
                 get: { auth.alertMessage != nil },
-                set: { if !$0 { auth.alertMessage = nil } }
+                set: { newValue in
+                    if !newValue, auth.alertMessage != nil {
+                        auth.alertMessage = nil
+                    }
+                }
             )
         ) {
-            Button("Bağla", role: .cancel) { auth.alertMessage = nil }
+            Button("Bağla", role: .cancel) { }
         } message: {
             Text(auth.alertMessage ?? "")
         }
@@ -464,7 +470,7 @@ private struct LoginView: View {
                         .foregroundStyle(ElmiYolStyle.secondary)
                 }
 
-                AuthTextField(title: "E-poçt ünvanı", placeholder: "example@mail.com", text: $email, icon: "envelope")
+                AuthTextField(title: "E-poçt ünvanı", placeholder: "example@mail.com", text: $email, icon: "envelope", validator: .email)
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
@@ -595,7 +601,8 @@ private struct RoleSelectionView: View {
 
 private struct StudentRegistrationView: View {
     @EnvironmentObject private var auth: AuthManager
-    
+    @StateObject private var catalog = CatalogViewModel()
+
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var email = ""
@@ -603,47 +610,64 @@ private struct StudentRegistrationView: View {
     @State private var groupNumber = ""
     @State private var password = ""
     @State private var confirmPassword = ""
-    
-    @StateObject private var catalog = CatalogViewModel()
+
     @State private var university: CatalogItem?
     @State private var faculty: CatalogItem?
     @State private var speciality: CatalogItem?
     @State private var studyYears: CatalogItem?
-    @State private var showSelectionErrors = false
     @State private var acceptedTerms = false
+    @State private var showErrors = false
 
     private var studyYearsItems: [CatalogItem] {
         let currentYear = Calendar.current.component(.year, from: Date())
-        return (0...3).map {
-            let text = "\(currentYear + $0)-\(currentYear + $0 + 2)"
+        return (0..<5).map { offset in
+            let start = currentYear - offset
+            let text = "\(start)-\(start + 2)"
             return CatalogItem(id: text, name: text)
         }
+    }
+
+    private var isFormValid: Bool {
+        fieldIsValid(firstName, .name) && fieldIsValid(lastName, .surname)
+        && fieldIsValid(email, .email) && fieldIsValid(phone, .phone)
+        && fieldIsValid(groupNumber, .required(fieldName: "Qrup nömrəsi"))
+        && university != nil && faculty != nil && speciality != nil && studyYears != nil
+        && (auth.user != nil
+            || (fieldIsValid(password, .password)
+                && fieldIsValid(confirmPassword, .confirmPassword(originalPassword: { password }))))
+        && acceptedTerms
     }
 
     var body: some View {
         AuthPageScaffold {
             VStack(alignment: .leading, spacing: 18) {
                 registrationHeading(title: "Magistr tələbəsi", subtitle: "Tələbə profilinizi yaratmaq üçün məlumatları doldurun.")
-                AuthTextField(title: "Ad", placeholder: "Adınızı daxil edin", text: $firstName, icon: "person")
+
+                AuthTextField(title: "Ad", placeholder: "Adınızı daxil edin", text: $firstName, icon: "person",
+                              validator: .name, showErrorsWhenEmpty: showErrors)
                     .textContentType(.givenName)
-                AuthTextField(title: "Soyad", placeholder: "Soyadınızı daxil edin", text: $lastName, icon: "person")
+                AuthTextField(title: "Soyad", placeholder: "Soyadınızı daxil edin", text: $lastName, icon: "person",
+                              validator: .surname, showErrorsWhenEmpty: showErrors)
                     .textContentType(.familyName)
-                AuthTextField(title: "E-poçt ünvanı", placeholder: "example@mail.com", text: $email, icon: "envelope")
-                    .textContentType(.emailAddress).keyboardType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled()
+                AuthTextField(title: "E-poçt ünvanı", placeholder: "example@mail.com", text: $email, icon: "envelope",
+                              validator: .email, showErrorsWhenEmpty: showErrors)
+                    .textContentType(.emailAddress).keyboardType(.emailAddress)
+                    .textInputAutocapitalization(.never).autocorrectionDisabled()
                     .disabled(auth.user != nil)
-                AuthTextField(title: "Telefon nömrəsi", placeholder: "50 123 45 67", text: $phone, icon: "phone")
-                    .keyboardType(.phonePad)
-                
+                AuthTextField(title: "Telefon nömrəsi (+994)", placeholder: "501234567", text: $phone, icon: "phone",
+                              validator: .phone, showErrorsWhenEmpty: showErrors, inputFilter: phoneDigits)
+                    .keyboardType(.numberPad)
+
                 CatalogPickerField(
                     title: "Universitet", placeholder: "Universitetinizi seçin", icon: "building.columns",
                     items: catalog.universities,
                     isLoading: catalog.isLoadingUniversities,
                     loadError: catalog.universitiesError,
-                    fieldError: showSelectionErrors && university == nil ? "Universiteti seçin" : nil,
+                    fieldError: showErrors && university == nil ? "Universiteti seçin" : nil,
                     selection: $university,
                     onRetry: { Task { await catalog.loadUniversities() } }
                 )
-                
+
                 CatalogPickerField(
                     title: "Fakültə", placeholder: "Fakültənizi seçin", icon: "person.text.rectangle",
                     items: catalog.faculties,
@@ -651,13 +675,13 @@ private struct StudentRegistrationView: View {
                     loadError: catalog.facultiesError,
                     isEnabled: university != nil,
                     disabledHint: "Əvvəlcə universiteti seçin",
-                    fieldError: showSelectionErrors && faculty == nil && university != nil ? "Fakültəni seçin" : nil,
+                    fieldError: showErrors && faculty == nil && university != nil ? "Fakültəni seçin" : nil,
                     selection: $faculty,
                     onRetry: {
                         if let university { Task { await catalog.loadFaculties(universityId: university.id) } }
                     }
                 )
-                
+
                 CatalogPickerField(
                     title: "İxtisas", placeholder: "İxtisasınızı seçin", icon: "graduationcap",
                     items: catalog.specialities,
@@ -665,7 +689,7 @@ private struct StudentRegistrationView: View {
                     loadError: catalog.specialitiesError,
                     isEnabled: faculty != nil,
                     disabledHint: "Əvvəlcə fakültəni seçin",
-                    fieldError: showSelectionErrors && speciality == nil && faculty != nil ? "İxtisası seçin" : nil,
+                    fieldError: showErrors && speciality == nil && faculty != nil ? "İxtisası seçin" : nil,
                     selection: $speciality,
                     onRetry: {
                         if let university, let faculty {
@@ -673,31 +697,48 @@ private struct StudentRegistrationView: View {
                         }
                     }
                 )
-                
-                AuthTextField(title: "Qrup nömrəsi", placeholder: "Məs: 704a2", text: $groupNumber, icon: "number")
-                
+
+                AuthTextField(title: "Qrup nömrəsi", placeholder: "Məs: 704a2", text: $groupNumber, icon: "number",
+                              validator: .required(fieldName: "Qrup nömrəsi"), showErrorsWhenEmpty: showErrors)
+
                 CatalogPickerField(
                     title: "Təhsil illəri", placeholder: "Təhsil illərinizi seçin", icon: "calendar",
                     items: studyYearsItems,
-                    fieldError: showSelectionErrors && studyYears == nil ? "Təhsil illərini seçin" : nil,
+                    fieldError: showErrors && studyYears == nil ? "Təhsil illərini seçin" : nil,
                     selection: $studyYears
                 )
-                
+
                 if auth.user == nil {
-                    AuthSecureField(title: "Şifrə", placeholder: "Şifrə yaradın", text: $password)
+                    AuthSecureField(title: "Şifrə", placeholder: "Şifrə yaradın", text: $password,
+                                    validator: .password, showErrorsWhenEmpty: showErrors)
                         .textContentType(.newPassword)
-                    AuthSecureField(title: "Şifrəni təkrar daxil edin", placeholder: "Şifrəni təkrar edin", text: $confirmPassword)
+                    AuthSecureField(title: "Şifrəni təkrar daxil edin", placeholder: "Şifrəni təkrar edin", text: $confirmPassword,
+                                    validator: .confirmPassword(originalPassword: { password }), showErrorsWhenEmpty: showErrors)
                         .textContentType(.newPassword)
                 }
-                termsToggle
-                PrimaryActionButton(title: "Qeydiyyatdan keç", isLoading: auth.isBusy) {
-                    submit()
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Toggle(isOn: $acceptedTerms) {
+                        Text("Məlumatların düzgün olduğunu təsdiqləyirəm və istifadə şərtləri ilə razıyam.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(ElmiYolStyle.secondary)
+                    }
+                    .tint(ElmiYolStyle.primary)
+                    .toggleStyle(.checkboxLike)
+                    FieldErrorText(message: showErrors && !acceptedTerms ? "Davam etmək üçün istifadə şərtləri ilə razılaşın." : nil)
                 }
-                existingAccountPrompt
+
+                PrimaryActionButton(title: "Qeydiyyatdan keç", isLoading: auth.isBusy) { submit() }
+
+                HStack(spacing: 4) {
+                    Text("Artıq hesabınız var?").foregroundStyle(ElmiYolStyle.secondary)
+                    Button("Daxil ol") { auth.path = [.login] }
+                        .foregroundStyle(ElmiYolStyle.primary).fontWeight(.semibold)
+                }
+                .font(.system(size: 14)).frame(maxWidth: .infinity).padding(.top, 2)
             }
         }
         .onAppear(perform: prefillAccountDetails)
-        
         .task { await catalog.loadUniversities() }
         .onChange(of: university) { _, newValue in
             faculty = nil
@@ -712,25 +753,6 @@ private struct StudentRegistrationView: View {
         }
     }
 
-    private var termsToggle: some View {
-        Toggle(isOn: $acceptedTerms) {
-            Text("Məlumatların düzgün olduğunu təsdiqləyirəm və istifadə şərtləri ilə razıyam.")
-                .font(.system(size: 13))
-                .foregroundStyle(ElmiYolStyle.secondary)
-        }
-        .tint(ElmiYolStyle.primary)
-        .toggleStyle(.checkboxLike)
-    }
-
-    private var existingAccountPrompt: some View {
-        HStack(spacing: 4) {
-            Text("Artıq hesabınız var?").foregroundStyle(ElmiYolStyle.secondary)
-            Button("Daxil ol") { auth.path = [.login] }
-                .foregroundStyle(ElmiYolStyle.primary).fontWeight(.semibold)
-        }
-        .font(.system(size: 14)).frame(maxWidth: .infinity).padding(.top, 2)
-    }
-
     private func prefillAccountDetails() {
         if firstName.isEmpty { firstName = auth.registrationFirstName }
         if lastName.isEmpty { lastName = auth.registrationLastName }
@@ -738,14 +760,15 @@ private struct StudentRegistrationView: View {
     }
 
     private func submit() {
-        showSelectionErrors = true
+        showErrors = true
+        guard isFormValid else { return }
+
         var model = StudentRegisterModel()
         model.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         model.lastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
         model.email = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        model.phone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+        model.phone = phone
         model.groupNumber = groupNumber.trimmingCharacters(in: .whitespacesAndNewlines)
-        
         model.university = university?.name ?? ""
         model.universityId = university?.id ?? ""
         model.faculty = faculty?.name ?? ""
@@ -753,27 +776,10 @@ private struct StudentRegistrationView: View {
         model.speciality = speciality?.name ?? ""
         model.specialityId = speciality?.id ?? ""
         model.studyYears = studyYears?.name ?? ""
-        
         model.password = auth.user == nil ? password : ""
         model.confirmPassword = auth.user == nil ? confirmPassword : ""
         model.acceptedTerms = acceptedTerms
 
-        let required: [(String, ValidatorType)] = [
-            (model.firstName, .name), (model.lastName, .surname), (model.email, .email),
-            (model.phone, .phone), (model.groupNumber, .required(fieldName: "Qrup nömrəsi"))
-        ]
-        guard validate(required, onError: { auth.showMessage($0) }) else { return }
-        guard university != nil, faculty != nil, speciality != nil, studyYears != nil else {
-            auth.showMessage("Universitet, fakültə, ixtisas və təhsil illərini seçin.")
-            return
-        }
-        if auth.user == nil {
-            guard validate([(password, .password), (confirmPassword, .confirmPassword(originalPassword: { password }))], onError: { auth.showMessage($0) }) else { return }
-        }
-        guard acceptedTerms else {
-            auth.showMessage("Davam etmək üçün istifadə şərtləri ilə razılaşın.")
-            return
-        }
         Task { await auth.registerStudent(model) }
     }
 }
@@ -781,74 +787,124 @@ private struct StudentRegistrationView: View {
 private struct SupervisorRegistrationView: View {
     @EnvironmentObject private var auth: AuthManager
     @StateObject private var catalog = CatalogViewModel()
-    @State private var workplace: CatalogItem?
-    @State private var specialityField: CatalogItem?
-    @State private var showSelectionErrors = false
-    
+
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var email = ""
     @State private var phone = ""
-    @State private var position = ""
-    @State private var academicDegree = ""
-    
     @State private var password = ""
     @State private var confirmPassword = ""
+
+    @State private var workplace: CatalogItem?
+    @State private var faculty: CatalogItem?
+    @State private var speciality: CatalogItem?
+    @State private var position = ""
+    @State private var academicDegree = ""
     @State private var acceptedTerms = false
+    @State private var showErrors = false
 
     private let positionOptions = ["Professor", "Dosent", "Baş müəllim", "Assistent"]
     private let degreeOptions = ["Elmlər doktoru", "Fəlsəfə doktoru (PhD)", "Dosent", "Professor"]
-   
+
+    private var isFormValid: Bool {
+        fieldIsValid(firstName, .name) && fieldIsValid(lastName, .surname)
+        && fieldIsValid(email, .email) && fieldIsValid(phone, .phone)
+        && workplace != nil && faculty != nil && speciality != nil
+        && !position.isEmpty && !academicDegree.isEmpty
+        && (auth.user != nil
+            || (fieldIsValid(password, .password)
+                && fieldIsValid(confirmPassword, .confirmPassword(originalPassword: { password }))))
+        && acceptedTerms
+    }
 
     var body: some View {
         AuthPageScaffold {
             VStack(alignment: .leading, spacing: 18) {
                 registrationHeading(title: "Elmi rəhbər", subtitle: "Rəhbər profilinizi yaratmaq üçün məlumatları doldurun.")
-                AuthTextField(title: "Ad", placeholder: "Adınızı daxil edin", text: $firstName, icon: "person").textContentType(.givenName)
-                AuthTextField(title: "Soyad", placeholder: "Soyadınızı daxil edin", text: $lastName, icon: "person").textContentType(.familyName)
-                AuthTextField(title: "E-poçt ünvanı", placeholder: "example@mail.com", text: $email, icon: "envelope")
-                    .textContentType(.emailAddress).keyboardType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled()
+
+                AuthTextField(title: "Ad", placeholder: "Adınızı daxil edin", text: $firstName, icon: "person",
+                              validator: .name, showErrorsWhenEmpty: showErrors)
+                    .textContentType(.givenName)
+                AuthTextField(title: "Soyad", placeholder: "Soyadınızı daxil edin", text: $lastName, icon: "person",
+                              validator: .surname, showErrorsWhenEmpty: showErrors)
+                    .textContentType(.familyName)
+                AuthTextField(title: "E-poçt ünvanı", placeholder: "example@mail.com", text: $email, icon: "envelope",
+                              validator: .email, showErrorsWhenEmpty: showErrors)
+                    .textContentType(.emailAddress).keyboardType(.emailAddress)
+                    .textInputAutocapitalization(.never).autocorrectionDisabled()
                     .disabled(auth.user != nil)
-                AuthTextField(title: "Telefon nömrəsi", placeholder: "50 123 45 67", text: $phone, icon: "phone").keyboardType(.phonePad)
-                
+                AuthTextField(title: "Telefon nömrəsi (+994)", placeholder: "501234567", text: $phone, icon: "phone",
+                              validator: .phone, showErrorsWhenEmpty: showErrors, inputFilter: phoneDigits)
+                    .keyboardType(.numberPad)
+
                 CatalogPickerField(
                     title: "İş yeri / Universitet", placeholder: "İş yerinizi seçin", icon: "building.columns",
                     items: catalog.universities,
                     isLoading: catalog.isLoadingUniversities,
                     loadError: catalog.universitiesError,
-                    fieldError: showSelectionErrors && workplace == nil ? "İş yerini seçin" : nil,
+                    fieldError: showErrors && workplace == nil ? "İş yerini seçin" : nil,
                     selection: $workplace,
                     onRetry: { Task { await catalog.loadUniversities() } }
                 )
-                
-                ChoicePickerField(title: "Vəzifə", placeholder: "Vəzifənizi seçin", selection: $position, options: positionOptions, icon: "person.text.rectangle")
-                ChoicePickerField(title: "Elmi dərəcə", placeholder: "Elmi dərəcənizi seçin", selection: $academicDegree, options: degreeOptions, icon: "graduationcap")
-                
+
                 CatalogPickerField(
-                    title: "İxtisas sahəsi", placeholder: "İxtisas sahənizi seçin", icon: "book",
+                    title: "Fakültə", placeholder: "Fakültənizi seçin", icon: "person.text.rectangle",
                     items: catalog.faculties,
                     isLoading: catalog.isLoadingFaculties,
                     loadError: catalog.facultiesError,
                     isEnabled: workplace != nil,
                     disabledHint: "Əvvəlcə iş yerini seçin",
-                    fieldError: showSelectionErrors && specialityField == nil && workplace != nil ? "İxtisas sahəsini seçin" : nil,
-                    selection: $specialityField,
+                    fieldError: showErrors && faculty == nil && workplace != nil ? "Fakültəni seçin" : nil,
+                    selection: $faculty,
                     onRetry: {
                         if let workplace { Task { await catalog.loadFaculties(universityId: workplace.id) } }
                     }
                 )
-                
+
+                CatalogPickerField(
+                    title: "İxtisas sahəsi", placeholder: "İxtisas sahənizi seçin", icon: "book",
+                    items: catalog.specialities,
+                    isLoading: catalog.isLoadingSpecialities,
+                    loadError: catalog.specialitiesError,
+                    isEnabled: faculty != nil,
+                    disabledHint: "Əvvəlcə fakültəni seçin",
+                    fieldError: showErrors && speciality == nil && faculty != nil ? "İxtisas sahəsini seçin" : nil,
+                    selection: $speciality,
+                    onRetry: {
+                        if let workplace, let faculty {
+                            Task { await catalog.loadSpecialities(universityId: workplace.id, facultyId: faculty.id) }
+                        }
+                    }
+                )
+
+                ChoicePickerField(title: "Vəzifə", placeholder: "Vəzifənizi seçin", selection: $position,
+                                  options: positionOptions, icon: "person.text.rectangle",
+                                  fieldError: showErrors && position.isEmpty ? "Vəzifəni seçin" : nil)
+                ChoicePickerField(title: "Elmi dərəcə", placeholder: "Elmi dərəcənizi seçin", selection: $academicDegree,
+                                  options: degreeOptions, icon: "graduationcap",
+                                  fieldError: showErrors && academicDegree.isEmpty ? "Elmi dərəcəni seçin" : nil)
+
                 if auth.user == nil {
-                    AuthSecureField(title: "Şifrə", placeholder: "Şifrə yaradın", text: $password).textContentType(.newPassword)
-                    AuthSecureField(title: "Şifrəni təkrar daxil edin", placeholder: "Şifrəni təkrar edin", text: $confirmPassword).textContentType(.newPassword)
+                    AuthSecureField(title: "Şifrə", placeholder: "Şifrə yaradın", text: $password,
+                                    validator: .password, showErrorsWhenEmpty: showErrors)
+                        .textContentType(.newPassword)
+                    AuthSecureField(title: "Şifrəni təkrar daxil edin", placeholder: "Şifrəni təkrar edin", text: $confirmPassword,
+                                    validator: .confirmPassword(originalPassword: { password }), showErrorsWhenEmpty: showErrors)
+                        .textContentType(.newPassword)
                 }
-                Toggle(isOn: $acceptedTerms) {
-                    Text("Məlumatların düzgün olduğunu təsdiq edirəm və istifadə şərtləri ilə razıyam.")
-                        .font(.system(size: 13)).foregroundStyle(ElmiYolStyle.secondary)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Toggle(isOn: $acceptedTerms) {
+                        Text("Məlumatların düzgün olduğunu təsdiq edirəm və istifadə şərtləri ilə razıyam.")
+                            .font(.system(size: 13)).foregroundStyle(ElmiYolStyle.secondary)
+                    }
+                    .tint(ElmiYolStyle.primary)
+                    .toggleStyle(.checkboxLike)
+                    FieldErrorText(message: showErrors && !acceptedTerms ? "Davam etmək üçün istifadə şərtləri ilə razılaşın." : nil)
                 }
-                .tint(ElmiYolStyle.primary)
-                .toggleStyle(.checkboxLike)
+
                 PrimaryActionButton(title: "Qeydiyyatdan keç", isLoading: auth.isBusy) { submit() }
+
                 HStack(spacing: 4) {
                     Text("Artıq hesabınız var?").foregroundStyle(ElmiYolStyle.secondary)
                     Button("Daxil ol") { auth.path = [.login] }.foregroundStyle(ElmiYolStyle.primary).fontWeight(.semibold)
@@ -859,9 +915,15 @@ private struct SupervisorRegistrationView: View {
         .onAppear(perform: prefillAccountDetails)
         .task { await catalog.loadUniversities() }
         .onChange(of: workplace) { _, newValue in
-            specialityField = nil
+            faculty = nil
+            speciality = nil
             guard let newValue else { catalog.clearFaculties(); return }
             Task { await catalog.loadFaculties(universityId: newValue.id) }
+        }
+        .onChange(of: faculty) { _, newValue in
+            speciality = nil
+            guard let newValue, let workplace else { catalog.clearSpecialities(); return }
+            Task { await catalog.loadSpecialities(universityId: workplace.id, facultyId: newValue.id) }
         }
     }
 
@@ -872,39 +934,26 @@ private struct SupervisorRegistrationView: View {
     }
 
     private func submit() {
+        showErrors = true
+        guard isFormValid else { return }
+
         var model = SupervisorRegisterModel()
         model.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         model.lastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
         model.email = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        model.phone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
-        showSelectionErrors = true
+        model.phone = phone
         model.workplace = workplace?.name ?? ""
         model.workplaceId = workplace?.id ?? ""
-        model.specialityField = specialityField?.name ?? ""
-        model.facultyId = specialityField?.id ?? ""
-        
+        model.faculty = faculty?.name ?? ""
+        model.facultyId = faculty?.id ?? ""
+        model.specialityField = speciality?.name ?? ""
+        model.specialityId = speciality?.id ?? ""
         model.position = position
         model.academicDegree = academicDegree
         model.password = auth.user == nil ? password : ""
         model.confirmPassword = auth.user == nil ? confirmPassword : ""
         model.acceptedTerms = acceptedTerms
 
-        let required: [(String, ValidatorType)] = [
-            (model.firstName, .name), (model.lastName, .surname), (model.email, .email), (model.phone, .phone)
-        ]
-        guard validate(required, onError: { auth.showMessage($0) }) else { return }
-        guard workplace != nil, specialityField != nil,
-              !model.position.isEmpty, !model.academicDegree.isEmpty else {
-            auth.showMessage("İş yeri, vəzifə, elmi dərəcə və ixtisas sahəsini seçin.")
-            return
-        }
-        if auth.user == nil {
-            guard validate([(password, .password), (confirmPassword, .confirmPassword(originalPassword: { password }))], onError: { auth.showMessage($0) }) else { return }
-        }
-        guard acceptedTerms else {
-            auth.showMessage("Davam etmək üçün istifadə şərtləri ilə razılaşın.")
-            return
-        }
         Task { await auth.registerSupervisor(model) }
     }
 }
@@ -1058,11 +1107,40 @@ private struct RoleChoiceCard: View {
     }
 }
 
+private func fieldIsValid(_ value: String, _ type: ValidatorType) -> Bool {
+    FieldValidator(type: type).validate(value).isValid
+}
+
+private func phoneDigits(_ value: String) -> String {
+    String(value.filter(\.isNumber).prefix(9))
+}
+
+private struct FieldErrorText: View {
+    let message: String?
+
+    var body: some View {
+        if let message {
+            Text(message)
+                .font(.system(size: 12))
+                .foregroundStyle(.red)
+                .transition(.opacity)
+        }
+    }
+}
+
 private struct AuthTextField: View {
     let title: String
     let placeholder: String
     @Binding var text: String
     var icon: String? = nil
+    var validator: ValidatorType? = nil
+    var showErrorsWhenEmpty = false
+    var inputFilter: ((String) -> String)? = nil
+
+    private var errorMessage: String? {
+        guard let validator, showErrorsWhenEmpty || !text.isEmpty else { return nil }
+        return FieldValidator(type: validator).validate(text).errorMessage
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -1078,7 +1156,17 @@ private struct AuthTextField: View {
             .padding(.horizontal, 14)
             .frame(minHeight: 52)
             .background(.white, in: RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(ElmiYolStyle.border, lineWidth: 1))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(errorMessage == nil ? ElmiYolStyle.border : Color.red.opacity(0.7), lineWidth: 1)
+            )
+            FieldErrorText(message: errorMessage)
+        }
+        .animation(.easeOut(duration: 0.15), value: errorMessage)
+        .onChange(of: text) { _, newValue in
+            guard let inputFilter else { return }
+            let filtered = inputFilter(newValue)
+            if filtered != newValue { text = filtered }
         }
     }
 }
@@ -1087,6 +1175,13 @@ private struct AuthSecureField: View {
     let title: String
     let placeholder: String
     @Binding var text: String
+    var validator: ValidatorType? = nil
+    var showErrorsWhenEmpty = false
+
+    private var errorMessage: String? {
+        guard let validator, showErrorsWhenEmpty || !text.isEmpty else { return nil }
+        return FieldValidator(type: validator).validate(text).errorMessage
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -1097,8 +1192,13 @@ private struct AuthSecureField: View {
                 .padding(.horizontal, 14)
                 .frame(minHeight: 52)
                 .background(.white, in: RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(ElmiYolStyle.border, lineWidth: 1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(errorMessage == nil ? ElmiYolStyle.border : Color.red.opacity(0.7), lineWidth: 1)
+                )
+            FieldErrorText(message: errorMessage)
         }
+        .animation(.easeOut(duration: 0.15), value: errorMessage)
     }
 }
 
@@ -1108,6 +1208,7 @@ private struct ChoicePickerField: View {
     @Binding var selection: String
     let options: [String]
     let icon: String
+    var fieldError: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -1128,8 +1229,12 @@ private struct ChoicePickerField: View {
                 .padding(.horizontal, 14)
                 .frame(minHeight: 52)
                 .background(.white, in: RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(ElmiYolStyle.border, lineWidth: 1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(fieldError == nil ? ElmiYolStyle.border : Color.red.opacity(0.7), lineWidth: 1)
+                )
             }
+            FieldErrorText(message: fieldError)
         }
     }
 }
@@ -1163,6 +1268,15 @@ private extension View {
             Text(subtitle).font(.system(size: 14)).foregroundStyle(ElmiYolStyle.secondary).lineSpacing(3).padding(.top, 8)
         }
         .padding(.bottom, 4)
+    }
+    func swipeBack(_ action: @escaping () -> Void) -> some View {
+        simultaneousGesture(
+            DragGesture(minimumDistance: 24).onEnded { value in
+                if value.startLocation.x < 60, value.translation.width > 80, abs(value.translation.height) < 80 {
+                    action()
+                }
+            }
+        )
     }
 }
 

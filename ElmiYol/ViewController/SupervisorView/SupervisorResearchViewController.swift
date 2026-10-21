@@ -129,6 +129,7 @@ final class SupervisorResearchViewController: UIViewController {
     
     private func setupView() {
         view.addSubview(scrollView)
+        scrollView.contentInsetAdjustmentBehavior = .always
         scrollView.addSubview(contentView)
         
         contentView.addSubview(headerView)
@@ -191,7 +192,7 @@ final class SupervisorResearchViewController: UIViewController {
             make.width.equalTo(scrollView)
         }
         headerView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(8)
+            make.top.equalToSuperview().offset(8)
             make.leading.trailing.equalToSuperview().inset(20)
         }
         titleLabel.snp.makeConstraints { make in

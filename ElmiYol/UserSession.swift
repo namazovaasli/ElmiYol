@@ -14,7 +14,8 @@ final class UserSession {
     var studentData: StudentRegisterModel?
     var supervisorData: SupervisorRegisterModel?
     var currentRole: UserRole?
-
+    var unreadMessagesCount = 0
+    
     var displayFirstName: String {
         switch currentRole {
         case .student:
@@ -49,12 +50,25 @@ extension UserSession {
         }
     }
 
-    var unreadMessagesCount: Int { 2 }
+    
     var unreadNotificationsCount: Int { 3 }
 
     func logout() {
         studentData = nil
         supervisorData = nil
         currentRole = nil
+        UnreadMessagesObserver.shared.stop()
+    }
+}
+extension UserSession {
+    var displayPhone: String {
+        let raw: String
+        switch currentRole {
+        case .student: raw = studentData?.phone ?? ""
+        case .supervisor: raw = supervisorData?.phone ?? ""
+        case .none: raw = ""
+        }
+        guard !raw.isEmpty else { return "" }
+        return raw.hasPrefix("+") ? raw : "+994 \(raw)"
     }
 }

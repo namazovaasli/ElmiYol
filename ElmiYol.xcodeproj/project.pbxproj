@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		319EF8D03002BFB700CE4CD5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 319EF8CF3002BFB700CE4CD5 /* SnapKit */; };
+		31D6355B3087C31200504D08 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 31D6355A3087C31200504D08 /* FirebaseStorage */; };
 		A10000000000000000000021 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000011 /* FirebaseCore */; };
 		A10000000000000000000022 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000012 /* FirebaseAuth */; };
 		A10000000000000000000023 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000013 /* FirebaseFirestore */; };
@@ -49,6 +50,7 @@
 				A10000000000000000000022 /* FirebaseAuth in Frameworks */,
 				A10000000000000000000023 /* FirebaseFirestore in Frameworks */,
 				A10000000000000000000024 /* GoogleSignIn in Frameworks */,
+				31D6355B3087C31200504D08 /* FirebaseStorage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				310B045B3001711400808AB9 /* ElmiYol */,
+				31D6355330878F3800504D08 /* Frameworks */,
 				310B045A3001711400808AB9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -69,6 +72,13 @@
 				310B04593001711400808AB9 /* ElmiYol.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		31D6355330878F3800504D08 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -96,6 +106,7 @@
 				A10000000000000000000012 /* FirebaseAuth */,
 				A10000000000000000000013 /* FirebaseFirestore */,
 				A10000000000000000000014 /* GoogleSignIn */,
+				31D6355A3087C31200504D08 /* FirebaseStorage */,
 			);
 			productName = ElmiYol;
 			productReference = 310B04593001711400808AB9 /* ElmiYol.app */;
@@ -411,6 +422,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 319EF8CE3002BFB700CE4CD5 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		31D6355A3087C31200504D08 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
 		};
 		A10000000000000000000011 /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;

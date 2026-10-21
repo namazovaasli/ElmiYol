@@ -5,13 +5,17 @@
 //  Created by Əsli Namazova on 19.07.26.
 //
 
+import SwiftUI
 import UIKit
 import SnapKit
+import FirebaseAuth
+import FirebaseFirestore
 
 final class SupervisorMessagesViewController: UIViewController {
 
     private var didNavigate = false
-
+    private var listener: ListenerRegistration?
+    
     private let scrollView: UIScrollView = {
         let sv = UIScrollView()
         sv.showsVerticalScrollIndicator = false
@@ -28,6 +32,20 @@ final class SupervisorMessagesViewController: UIViewController {
         label.font = .systemFont(ofSize: 26, weight: .bold)
         label.textColor = AppColors.textPrimary
         return label
+    }()
+    private let newMessageButton: UIButton = {
+        let button = UIButton(type: .system)
+        var config = UIButton.Configuration.filled()
+        config.image = UIImage(systemName: "plus")
+        config.imagePadding = 6
+        config.cornerStyle = .capsule
+        config.baseBackgroundColor = AppColors.primary
+        config.baseForegroundColor = .white
+        config.attributedTitle = AttributedString("Yeni mesaj", attributes: AttributeContainer([
+            .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
+        ]))
+        button.configuration = config
+        return button
     }()
 
     private let subtitleLabel: UILabel = {
@@ -91,25 +109,53 @@ final class SupervisorMessagesViewController: UIViewController {
             make.leading.trailing.equalToSuperview().inset(20)
             make.bottom.equalToSuperview().offset(-24)
         }
+        contentView.addSubview(newMessageButton)
+        newMessageButton.addAction(UIAction { [weak self] _ in
+            self?.handleNewMessageTap()
+        }, for: .touchUpInside)
+        
+        newMessageButton.snp.makeConstraints { make in
+            make.centerY.equalTo(titleLabel)
+            make.trailing.equalToSuperview().offset(-20)
+        }
+        
     }
 
+    deinit { listener?.remove() }
+
     private func loadThreads() {
-        let threads = [
-            ("Əsli Namazova", "Dissertasiya planını yüklədim, baxa bilərsiniz?", "09:15", true),
-            ("Nigar Əliyeva", "Görüş vaxtını dəyişmək istəyirəm.", "Dünən", false),
-            ("Reşad Hüseynli", "Hesabat faylını göndərdim.", "2 gün əvvəl", false)
-        ]
-        for thread in threads {
-            let row = makeThreadRow(name: thread.0, preview: thread.1, time: thread.2, isOnline: thread.3)
-            row.onTap = { [weak self] in
-                guard let self, !self.didNavigate else { return }
-                self.didNavigate = true
-                let chatVC = ChatDetailViewController(personName: thread.0, personSubtitle: "Magistr tələbəsi")
-                chatVC.hidesBottomBarWhenPushed = true
-                self.navigationController?.pushViewControllerWithFade(chatVC)
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        listener = ChatRepository.shared.listenThreads(for: uid) { [weak self] threads in
+            guard let self else { return }
+            self.threadsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+            for thread in threads {
+                let row = self.makeThreadRow(name: thread.otherName, preview: thread.lastMessage, time: thread.timeText, isOnline: false)
+                row.onTap = { [weak self] in
+                    guard let self, !self.didNavigate else { return }
+                    self.didNavigate = true
+                    self.openChat(uid: thread.otherUid, name: thread.otherName)
+                }
+                self.threadsStackView.addArrangedSubview(row)
             }
-            threadsStackView.addArrangedSubview(row)
         }
+    }
+
+    private func openChat(uid: String, name: String) {
+        let chatVC = ChatDetailViewController(otherUid: uid, personName: name, personSubtitle: "Magistr tələbəsi")
+        chatVC.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewControllerWithFade(chatVC)
+    }
+
+    private func handleNewMessageTap() {
+        var pickerHost: UIHostingController<PeoplePickerView>?
+        let picker = PeoplePickerView { [weak self] person in
+            pickerHost?.dismiss(animated: true) {
+                self?.openChat(uid: person.uid, name: person.name)
+            }
+        }
+        let host = UIHostingController(rootView: picker)
+        pickerHost = host
+        present(host, animated: true)
     }
 
     private func makeThreadRow(name: String, preview: String, time: String, isOnline: Bool) -> ThreadRowView {

@@ -47,7 +47,7 @@ enum SideMenuItem: Int, CaseIterable {
         }
     }
 
-    /// Bu item-dən sonra ayırıcı xətt çəkilsin, yoxsa yox
+    
     var hasSeparatorAfter: Bool {
         switch self {
         case .profile: return true

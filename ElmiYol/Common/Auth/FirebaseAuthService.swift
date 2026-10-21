@@ -57,15 +57,18 @@ struct FirebaseUserProfile {
             session.supervisorData = nil
             session.currentRole = .student
         case .some(.supervisor):
-            var model = SupervisorRegisterModel()
+            var model = SupervisorRegisterModel()  
             model.firstName = value("firstName")
             model.lastName = value("lastName")
             model.email = value("email")
             model.phone = value("phone")
             model.workplace = value("workplace")
             model.position = value("position")
-            model.academicDegree = value("academicDegree")
             model.specialityField = value("specialityField")
+            model.faculty = value("faculty")
+            model.facultyId = value("facultyId")
+            model.specialityId = value("specialityId")
+            model.academicDegree = value("academicDegree")
             model.acceptedTerms = fields["acceptedTerms"] as? Bool ?? false
             model.workplaceId = value("universityId")
             model.facultyId = value("facultyId")
@@ -283,6 +286,8 @@ final class FirebaseAuthService {
             "position": model.position,
             "academicDegree": model.academicDegree,
             "specialityField": model.specialityField,
+            "faculty": model.faculty,
+            "specialityId": model.specialityId,
             "acceptedTerms": model.acceptedTerms,
             "updatedAt": FieldValue.serverTimestamp(),
             "universityId": model.workplaceId,
@@ -314,7 +319,9 @@ final class FirebaseAuthService {
             "universityId": model.workplaceId,
             "university": model.workplace,
             "facultyId": model.facultyId,
-            "faculty": model.specialityField,
+            "faculty": model.faculty,
+            "specialityId": model.specialityId,
+            "speciality": model.specialityField,
             "position": model.position,
             "academicDegree": model.academicDegree,
             "updatedAt": FieldValue.serverTimestamp()
