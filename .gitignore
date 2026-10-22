@@ -1,6 +1,17 @@
-node_modules/
-/.pnpm-store/
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.build/
+
+# macOS
+.DS_Store
+
+# Secrets
+Secrets.xcconfig
 serviceAccountKey.json
 *.serviceAccountKey.json
-npm-debug.log*
-.DS_Store
+
+# Node 
+node_modules/
+.pnpm-store/
