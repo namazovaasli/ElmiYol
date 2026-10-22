@@ -15,3 +15,8 @@
 	</array>
 </dict>
 </plist>
+
+<key>SupabaseHost</key>
+<string>$(SUPABASE_HOST)</string>
+<key>SupabaseAnonKey</key>
+<string>$(SUPABASE_ANON_KEY)</string>
