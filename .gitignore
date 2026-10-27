@@ -15,3 +15,8 @@ serviceAccountKey.json
 # Node 
 node_modules/
 .pnpm-store/
+# Firebase / secrets
+GoogleService-Info.plist
+**/GoogleService-Info.plist
+*.xcconfig
+Secrets.plist
