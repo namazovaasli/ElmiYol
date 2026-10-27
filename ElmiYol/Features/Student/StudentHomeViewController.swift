@@ -49,7 +49,7 @@ final class StudentHomeViewController: UIViewController {
         )
         if let range = text.range(of: "Yol") {
             let nsRange = NSRange(range, in: text)
-            attributed.addAttribute(.foregroundColor, value: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1), range: nsRange)
+            attributed.addAttribute(.foregroundColor, value: AppColors.primary, range: nsRange)
         }
         label.attributedText = attributed
         return label
@@ -159,7 +159,7 @@ final class StudentHomeViewController: UIViewController {
 
     private lazy var statMeetingView = StatItemView(
         iconSystemName: "calendar",
-        iconTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+        iconTint: AppColors.green,
         iconBackground: UIColor(red: 0.24, green: 0.68, blue: 0.48, alpha: 1),
         value: "2",
         caption: "Görüş bu həftə"
@@ -209,7 +209,7 @@ final class StudentHomeViewController: UIViewController {
 
     private lazy var researchQuickView = QuickAccessItemView(
         iconSystemName: "folder.fill",
-        iconTint: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1),
+        iconTint: AppColors.primary,
         iconBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1),
         titleText: "Tədqiqatlarım"
     )
@@ -223,7 +223,7 @@ final class StudentHomeViewController: UIViewController {
 
     private lazy var messagesQuickView = QuickAccessItemView(
         iconSystemName: "bubble.left.and.bubble.right.fill",
-        iconTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+        iconTint: AppColors.green,
         iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
         titleText: "Mesajlar"
     )
@@ -258,27 +258,27 @@ final class StudentHomeViewController: UIViewController {
 
     private lazy var advisorMeetingRow = MeetingRowView(
         iconSystemName: "calendar",
-        iconTint: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1),
+        iconTint: AppColors.primary,
         iconBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1),
         titleText: "Rəhbərlə görüş",
         personText: "Prof. Dr. İlqar Məmmədov",
         dateText: "23 May 2025",
         timeText: "14:00",
         badgeText: "Sabah",
-        badgeTint: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1),
+        badgeTint: AppColors.primary,
         badgeBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
     )
 
     private lazy var planMeetingRow = MeetingRowView(
         iconSystemName: "calendar",
-        iconTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+        iconTint: AppColors.green,
         iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
         titleText: "Tədqiqat planı müzakirəsi",
         personText: "Prof. Dr. Aygün Əliyeva",
         dateText: "27 May 2025",
         timeText: "11:00",
         badgeText: "3 gün sonra",
-        badgeTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+        badgeTint: AppColors.green,
         badgeBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1)
     )
 
@@ -737,7 +737,7 @@ private final class SectionHeaderView: UIView {
         config.imagePadding = 4
         config.contentInsets = .zero
         button.configuration = config
-        button.tintColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        button.tintColor = AppColors.primary
         return button
     }()
 
@@ -749,7 +749,7 @@ private final class SectionHeaderView: UIView {
         config?.attributedTitle = AttributedString("Hamısına bax", attributes: AttributeContainer([
             .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
         ]))
-        config?.baseForegroundColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        config?.baseForegroundColor = AppColors.primary
         seeAllButton.configuration = config
 
         addSubview(titleLabel)
@@ -1000,7 +1000,7 @@ private final class ResearchProgressRowView: UIView {
     }()
     private let progressFillView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        view.backgroundColor = AppColors.primary
         view.layer.cornerRadius = 4
         return view
     }()
@@ -1020,7 +1020,7 @@ private final class ResearchProgressRowView: UIView {
         iconContainerView.backgroundColor = UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
         iconContainerView.layer.cornerRadius = 22
         iconImageView.image = UIImage(systemName: iconSystemName)
-        iconImageView.tintColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        iconImageView.tintColor = AppColors.primary
         titleLabel.text = titleText
         progressPercentLabel.text = "\(Int(progress * 100))%"
 

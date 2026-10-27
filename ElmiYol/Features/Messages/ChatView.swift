@@ -247,7 +247,7 @@ struct ChatView: View {
                 .font(.system(size: 15))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color(red: 0.95, green: 0.96, blue: 0.98), in: RoundedRectangle(cornerRadius: 20))
+                .background(Color(uiColor: AppColors.separator), in: RoundedRectangle(cornerRadius: 20))
 
             Button {
                 let text = draft
@@ -307,7 +307,7 @@ private struct MessageBubble: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(
-                message.isMine ? ElmiYolStyle.primary : Color(red: 0.93, green: 0.95, blue: 0.98),
+                message.isMine ? ElmiYolStyle.primary : Color(uiColor: AppColors.separator),
                 in: RoundedRectangle(cornerRadius: 16)
             )
             if !message.isMine { Spacer(minLength: 48) }

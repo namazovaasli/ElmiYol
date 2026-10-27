@@ -140,12 +140,12 @@ struct SupervisorRegistrationView: View {
         .onChange(of: workplace) { _, newValue in
             faculty = nil
             speciality = nil
-            guard let newValue else { catalog.clearFaculties(); return }
+            guard let newValue else { Task { @MainActor in await Task.yield(); catalog.clearFaculties() }; return }
             Task { await catalog.loadFaculties(universityId: newValue.id) }
         }
         .onChange(of: faculty) { _, newValue in
             speciality = nil
-            guard let newValue, let workplace else { catalog.clearSpecialities(); return }
+            guard let newValue, let workplace else { Task { @MainActor in await Task.yield(); catalog.clearSpecialities() }; return }
             Task { await catalog.loadSpecialities(universityId: workplace.id, facultyId: newValue.id) }
         }
     }

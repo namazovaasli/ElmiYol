@@ -20,8 +20,8 @@ struct ElmiYolApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(auth)
-                .preferredColorScheme(.light)
                 .onOpenURL { auth.handleIncomingURL($0) }
+                .onAppear { AppearanceManager.shared.apply() }
         }
     }
 }

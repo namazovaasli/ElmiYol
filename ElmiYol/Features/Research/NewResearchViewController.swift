@@ -207,6 +207,14 @@ final class NewResearchViewController: UIViewController {
         guard !didNavigate else { return }
         didNavigate = true
 
+        NotificationStore.shared.add(
+            kind: .research,
+            title: "Yeni tədqiqat əlavə edildi",
+            message: "\(titleField.value) tədqiqatı yaradıldı",
+            meta: titleField.value,
+            person: supervisorField.selectedValue ?? ""
+        )
+        
         let alert = UIAlertController(
             title: "Tədqiqat əlavə edildi",
             message: "Yeni tədqiqat sorğunuz qeydə alındı.",

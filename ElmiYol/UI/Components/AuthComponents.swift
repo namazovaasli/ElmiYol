@@ -267,3 +267,33 @@ extension View {
         )
     }
 }
+struct GoogleContinueButton: View {
+    @EnvironmentObject private var auth: AuthManager
+
+    var body: some View {
+        Button {
+            Task { await auth.signInWithGoogle() }
+        } label: {
+            HStack(spacing: 10) {
+                Image("google_icon").resizable().scaledToFit().frame(width: 20, height: 20)
+                Text("Google ilə davam et")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(ElmiYolStyle.ink)
+            }
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .background(ElmiYolStyle.surface, in: RoundedRectangle(cornerRadius: 15))
+            .overlay(RoundedRectangle(cornerRadius: 15).stroke(ElmiYolStyle.border, lineWidth: 1))
+        }
+        .disabled(auth.isBusy)
+    }
+}
+
+struct OrDivider: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            Rectangle().fill(ElmiYolStyle.border).frame(height: 1)
+            Text("və ya").font(.system(size: 14)).foregroundStyle(ElmiYolStyle.muted)
+            Rectangle().fill(ElmiYolStyle.border).frame(height: 1)
+        }
+    }
+}

@@ -15,7 +15,7 @@ struct LaunchView: View {
         GeometryReader { geometry in
             Button(action: onContinue) {
                 ZStack(alignment: .bottom) {
-                    Color.white.ignoresSafeArea()
+                    ElmiYolStyle.background.ignoresSafeArea()
                     AnimatedWaves()
                         .frame(height: geometry.size.height * 0.43)
                         .ignoresSafeArea(edges: .bottom)

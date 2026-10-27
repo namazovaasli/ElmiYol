@@ -25,6 +25,11 @@ struct RoleSelectionView: View {
                         .lineSpacing(3)
                 }
 
+                if auth.user == nil {
+                    GoogleContinueButton()
+                    OrDivider()
+                }
+                
                 RoleChoiceCard(
                     image: "role_student_illustration",
                     title: "Magistr tələbəsi",

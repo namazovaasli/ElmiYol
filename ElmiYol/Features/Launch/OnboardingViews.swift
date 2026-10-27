@@ -22,7 +22,7 @@ struct OnboardingFirstView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
-                Color.white.ignoresSafeArea()
+                ElmiYolStyle.background.ignoresSafeArea()
                 AnimatedWaves()
                     .frame(height: geometry.size.height * 0.28)
                     .ignoresSafeArea(edges: .bottom)
@@ -89,7 +89,7 @@ struct OnboardingSecondView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
-                Color.white.ignoresSafeArea()
+                ElmiYolStyle.background.ignoresSafeArea()
                 AnimatedWaves()
                     .frame(height: geometry.size.height * 0.25)
                     .ignoresSafeArea(edges: .bottom)
@@ -191,7 +191,7 @@ struct OnboardingActionButton: View {
             .font(.system(size: 16, weight: .semibold))
             .foregroundStyle(secondary ? ElmiYolStyle.ink : .white)
             .frame(maxWidth: .infinity, minHeight: 54)
-            .background(secondary ? Color(red: 0.94, green: 0.95, blue: 0.97) : ElmiYolStyle.primary, in: Capsule())
+            .background(secondary ? Color(uiColor: AppColors.separator) : ElmiYolStyle.primary, in: Capsule())
         }
         .buttonStyle(.plain)
     }

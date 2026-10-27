@@ -94,7 +94,7 @@ final class StudentProfileViewController: UIViewController {
         contentView.addSubview(settingsSection)
 
         let footerLabel = UILabel()
-        footerLabel.text = "ElmiYol v1.0.0\n© 2025 Bütün hüquqlar qorunur."
+        footerLabel.text = "ElmiYol v1.0.0\n© 2026 Bütün hüquqlar qorunur."
         footerLabel.font = .systemFont(ofSize: 12)
         footerLabel.textColor = AppColors.textMuted
         footerLabel.textAlignment = .center
@@ -156,7 +156,7 @@ final class StudentProfileViewController: UIViewController {
         let avatarView = UIView()
         avatarView.backgroundColor = UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
         avatarView.layer.cornerRadius = 36
-        let avatarIcon = UIImageView(image: UIImage(systemName: "person.fill"))
+        let avatarIcon = UIImageView(image: UIImage(named: "user_avatar"))
         avatarIcon.tintColor = AppColors.primary
         avatarView.addSubview(avatarIcon)
         avatarIcon.snp.makeConstraints { $0.center.equalToSuperview(); $0.width.height.equalTo(28) }
@@ -190,6 +190,8 @@ final class StudentProfileViewController: UIViewController {
         emailLabel.text = "✉ \(UserSession.shared.displayEmail)"
         emailLabel.font = .systemFont(ofSize: 13)
         emailLabel.textColor = AppColors.textSecondary
+        emailLabel.adjustsFontSizeToFitWidth = true
+        emailLabel.minimumScaleFactor = 0.8
 
         let phoneLabel = UILabel()
         phoneLabel.text = "📞 \(UserSession.shared.displayPhone)"
@@ -220,14 +222,14 @@ final class StudentProfileViewController: UIViewController {
         avatarView.snp.makeConstraints { make in
             make.top.leading.equalToSuperview().offset(20)
             make.width.height.equalTo(72)
-            make.bottom.equalToSuperview().offset(-20)
         }
         editButton.snp.makeConstraints { make in
             make.top.trailing.equalToSuperview().inset(20)
         }
         nameLabel.snp.makeConstraints { make in
-            make.top.equalTo(avatarView)
+            make.top.equalTo(avatarView).offset(8)
             make.leading.equalTo(avatarView.snp.trailing).offset(16)
+            make.trailing.lessThanOrEqualTo(editButton.snp.leading).offset(-8)
         }
         roleBadge.snp.makeConstraints { make in
             make.top.equalTo(nameLabel.snp.bottom).offset(6)
@@ -235,14 +237,15 @@ final class StudentProfileViewController: UIViewController {
             make.height.equalTo(24)
         }
         emailLabel.snp.makeConstraints { make in
-            make.top.equalTo(roleBadge.snp.bottom).offset(10)
-            make.leading.equalTo(nameLabel)
+            make.top.equalTo(avatarView.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview().inset(20)
         }
         phoneLabel.snp.makeConstraints { make in
-            make.top.equalTo(emailLabel.snp.bottom).offset(4)
-            make.leading.equalTo(nameLabel)
+            make.top.equalTo(emailLabel.snp.bottom).offset(6)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalToSuperview().offset(-20)
         }
-
+        
         return card
     }
 

@@ -39,7 +39,7 @@ final class BaseButton: UIButton {
 
         switch style {
         case .primary:
-            config.baseBackgroundColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+            config.baseBackgroundColor = AppColors.primary
             config.baseForegroundColor = .white
         case .secondary:
             config.baseBackgroundColor = UIColor(red: 0.94, green: 0.95, blue: 0.97, alpha: 1)

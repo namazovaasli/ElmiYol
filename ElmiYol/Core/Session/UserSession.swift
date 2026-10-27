@@ -15,15 +15,13 @@ final class UserSession {
     var supervisorData: SupervisorRegisterModel?
     var currentRole: UserRole?
     var unreadMessagesCount = 0
-    
+    var unreadNotificationsCount = 0
+
     var displayFirstName: String {
         switch currentRole {
-        case .student:
-            return studentData?.firstName ?? "İstifadəçi"
-        case .supervisor:
-            return supervisorData?.firstName ?? "İstifadəçi"
-        case .none:
-            return "İstifadəçi"
+        case .student: return studentData?.firstName ?? "İstifadəçi"
+        case .supervisor: return supervisorData?.firstName ?? "İstifadəçi"
+        case .none: return "İstifadəçi"
         }
     }
 
@@ -39,9 +37,7 @@ final class UserSession {
             return ""
         }
     }
-}
 
-extension UserSession {
     var displayEmail: String {
         switch currentRole {
         case .student: return studentData?.email ?? ""
@@ -50,17 +46,6 @@ extension UserSession {
         }
     }
 
-    
-    var unreadNotificationsCount: Int { 3 }
-
-    func logout() {
-        studentData = nil
-        supervisorData = nil
-        currentRole = nil
-        UnreadMessagesObserver.shared.stop()
-    }
-}
-extension UserSession {
     var displayPhone: String {
         let raw: String
         switch currentRole {
@@ -70,5 +55,13 @@ extension UserSession {
         }
         guard !raw.isEmpty else { return "" }
         return raw.hasPrefix("+") ? raw : "+994 \(raw)"
+    }
+
+    func logout() {
+        studentData = nil
+        supervisorData = nil
+        currentRole = nil
+        unreadNotificationsCount = 0
+        UnreadMessagesObserver.shared.stop()
     }
 }

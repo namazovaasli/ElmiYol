@@ -23,6 +23,18 @@ final class UnreadMessagesObserver {
         listener = ChatRepository.shared.listenThreads(for: uid) { threads in
             UserSession.shared.unreadMessagesCount = threads.reduce(0) { $0 + $1.unread }
             NotificationCenter.default.post(name: .unreadMessagesChanged, object: nil)
+
+            for t in threads {
+                let ref = "chat:\(t.id)"
+                if t.unread > 0, t.lastSenderId != uid {
+                    NotificationStore.shared.upsert(
+                        refId: ref, kind: .message,
+                        title: "Yeni mesaj", message: t.lastMessage,
+                        person: t.otherName, createdAt: t.lastMessageAt)
+                } else if t.unread == 0 {
+                    NotificationStore.shared.markRead(refId: ref)
+                }
+            }
         }
     }
 

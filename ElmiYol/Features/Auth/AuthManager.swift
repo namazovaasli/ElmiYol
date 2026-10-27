@@ -145,6 +145,12 @@ final class AuthManager: ObservableObject {
             UserSession.shared.studentData = savedModel
             UserSession.shared.supervisorData = nil
             UserSession.shared.currentRole = .student
+            NotificationStore.shared.add(
+                kind: .system,
+                title: "Qeydiyyat tamamlandı",
+                message: "Hesabınız uğurla yaradıldı. ElmiYol-a xoş gəlmisiniz!"
+            )
+            NotificationStore.shared.refreshSessionCount()
             self.profileLoadGeneration += 1
             self.user = user
             self.role = .student
@@ -169,6 +175,12 @@ final class AuthManager: ObservableObject {
             UserSession.shared.supervisorData = savedModel
             UserSession.shared.studentData = nil
             UserSession.shared.currentRole = .supervisor
+            NotificationStore.shared.add(
+                kind: .system,
+                title: "Qeydiyyat tamamlandı",
+                message: "Hesabınız uğurla yaradıldı. ElmiYol-a xoş gəlmisiniz!"
+            )
+            NotificationStore.shared.refreshSessionCount()
             self.profileLoadGeneration += 1
             self.user = user
             self.role = .supervisor
@@ -255,6 +267,7 @@ final class AuthManager: ObservableObject {
             guard generation == profileLoadGeneration, self.user?.uid == user.uid else { return }
             if let profile, let role = profile.role {
                 profile.applyToSession()
+                NotificationStore.shared.refreshSessionCount()
                 self.role = role
                 needsRoleSelection = false
             } else {
@@ -285,7 +298,8 @@ final class AuthManager: ObservableObject {
     }
     
     private func show(_ error: Error) {
-        showMessage(error.localizedDescription, title: "Giriş alınmadı")
+        guard let message = AuthErrorMessage.text(for: error) else { return }
+        showMessage(message, title: "Giriş alınmadı")
     }
     
     private static func signIn(email: String, password: String) async throws -> User {

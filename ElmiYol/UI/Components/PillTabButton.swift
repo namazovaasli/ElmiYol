@@ -25,14 +25,14 @@ final class PillTabButton: UIButton {
             .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
         ]))
         config.cornerStyle = .capsule
-        config.baseBackgroundColor = .white
+        config.baseBackgroundColor = AppColors.surface
         config.baseForegroundColor = AppColors.textPrimary
         configuration = config
     }
 
     func setSelected(_ selected: Bool) {
         var config = configuration
-        config?.baseBackgroundColor = selected ? AppColors.primary : .white
+        config?.baseBackgroundColor = selected ? AppColors.primary : AppColors.surface
         config?.baseForegroundColor = selected ? .white : AppColors.textPrimary
         configuration = config
     }

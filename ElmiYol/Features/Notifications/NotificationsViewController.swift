@@ -22,6 +22,9 @@ private struct NotificationGroup {
 }
 
 private struct NotificationItem {
+    let id: String
+    let kind: AppNotification.Kind
+    let person: String
     let iconSystemName: String
     let iconTint: UIColor
     let iconBackground: UIColor
@@ -38,8 +41,7 @@ final class NotificationsViewController: UIViewController {
 
     private var currentFilter: NotificationFilter = .all
     private var didNavigate = false
-    private var allGroups: [NotificationGroup] = NotificationsViewController.sampleGroups
-
+    private var allGroups: [NotificationGroup] = []
     private let scrollView: UIScrollView = {
         let sv = UIScrollView()
         sv.showsVerticalScrollIndicator = false
@@ -143,8 +145,15 @@ final class NotificationsViewController: UIViewController {
         setupView()
         setupConstraints()
         setupActions()
+        loadFromStore()
         updateFilters()
         reloadNotifications()
+        NotificationCenter.default.addObserver(
+            forName: NotificationStore.didChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.loadFromStore()
+            self?.reloadNotifications()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -275,23 +284,8 @@ final class NotificationsViewController: UIViewController {
     }
 
     private func markAllNotificationsRead() {
-        allGroups = allGroups.map { group in
-            NotificationGroup(
-                title: group.title,
-                items: group.items.map { item in
-                    NotificationItem(
-                        iconSystemName: item.iconSystemName,
-                        iconTint: item.iconTint,
-                        iconBackground: item.iconBackground,
-                        title: item.title,
-                        message: item.message,
-                        meta: item.meta,
-                        time: item.time,
-                        isUnread: false
-                    )
-                }
-            )
-        }
+        NotificationStore.shared.markAllRead()
+        loadFromStore()
         reloadNotifications()
     }
 
@@ -333,23 +327,25 @@ final class NotificationsViewController: UIViewController {
         guard !didNavigate else { return }
         didNavigate = true
 
-        if item.title.contains("mesaj") || item.title.contains("Mesaj") {
+        NotificationStore.shared.markRead(id: item.id)
+
+        if item.kind == .message {
             tabBarController?.selectedIndex = NotificationsOrigin.messages.rawValue
             tabBarController?.tabBar.isHidden = false
             navigationController?.popViewControllerWithFade()
             return
         }
 
-        if item.title.contains("görüş") || item.title.contains("Görüş") {
+        if item.kind == .meeting {
             let data = MeetingDetailData(
-                titleText: "Rəhbərlik görüşü",
-                personText: "Prof. Dr. İlqar Məmmədov",
-                dateText: "23 May 2025",
-                timeText: "14:00 – 15:00",
-                modeText: "Online (Zoom)",
-                statusText: "Təsdiqləndi",
+                titleText: item.meta.isEmpty ? item.title : item.meta,
+                personText: item.person,
+                dateText: item.time,
+                timeText: "—",
+                modeText: "—",
+                statusText: "Gözləyir",
                 statusTint: AppColors.primary,
-                statusBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
+                statusBackground: AppColors.tintBlue
             )
             let detailVC = MeetingDetailViewController(data: data)
             detailVC.hidesBottomBarWhenPushed = true
@@ -358,18 +354,18 @@ final class NotificationsViewController: UIViewController {
         }
 
         let researchItem = ResearchItem(
-            id: "notification",
+            id: item.id,
             iconSystemName: "doc.text.fill",
             iconTint: AppColors.primary,
-            iconBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1),
+            iconBackground: AppColors.tintBlue,
             statusText: "Aktiv",
             statusTint: AppColors.green,
-            statusBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
+            statusBackground: AppColors.tintGreen,
             titleText: item.meta.isEmpty ? item.title : item.meta,
-            personText: "Prof. Dr. İlqar Məmmədov",
+            personText: item.person,
             startDateText: item.time,
             endDateText: "—",
-            progress: 0.65
+            progress: 0
         )
         let detailVC = ResearchDetailViewController(item: researchItem)
         detailVC.hidesBottomBarWhenPushed = true
@@ -385,11 +381,11 @@ final class NotificationsViewController: UIViewController {
             case .unread:
                 filteredItems = group.items.filter { $0.isUnread }
             case .research:
-                filteredItems = group.items.filter { $0.meta.contains("tədqiqat") || $0.title.contains("fayl") || $0.title.contains("rəy") }
+                filteredItems = group.items.filter { $0.kind == .research }
             case .meetings:
-                filteredItems = group.items.filter { $0.title.contains("görüş") || $0.title.contains("Görüş") }
+                filteredItems = group.items.filter { $0.kind == .meeting }
             case .system:
-                filteredItems = group.items.filter { $0.title.contains("Sistem") || $0.iconSystemName == "gearshape.fill" }
+                filteredItems = group.items.filter { $0.kind == .system }
             case .all:
                 filteredItems = group.items
             }
@@ -398,62 +394,43 @@ final class NotificationsViewController: UIViewController {
         }
     }
 
-    private static let sampleGroups: [NotificationGroup] = [
-        NotificationGroup(title: "Bu gün", items: [
-            NotificationItem(
-                iconSystemName: "doc.fill", iconTint: AppColors.primary,
-                iconBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1),
-                title: "Yeni fayl yükləndi",
-                message: "Əsli Namazova 'Dissertasiya_Bab1.pdf' faylını yüklədi.",
-                meta: "Süni intellektin təhsildə tətbiqi imkanları",
-                time: "09:32", isUnread: true
-            ),
-            NotificationItem(
-                iconSystemName: "bubble.left.fill", iconTint: AppColors.green,
-                iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
-                title: "Yeni mesaj",
-                message: "Prof. Dr. İlqar Məmmədov sizə mesaj göndərdi.",
-                meta: "Mesajlar",
-                time: "08:15", isUnread: true
-            ),
-            NotificationItem(
-                iconSystemName: "calendar", iconTint: AppColors.orange,
-                iconBackground: UIColor(red: 1, green: 0.94, blue: 0.87, alpha: 1),
-                title: "Görüş təsdiqləndi",
-                message: "23 May 2025 tarixli görüşünüz təsdiq edildi.",
-                meta: "Görüşlər",
-                time: "07:40", isUnread: false
-            )
-        ]),
-        NotificationGroup(title: "Dünən", items: [
-            NotificationItem(
-                iconSystemName: "text.bubble.fill", iconTint: AppColors.purple,
-                iconBackground: UIColor(red: 0.93, green: 0.9, blue: 1, alpha: 1),
-                title: "Yeni rəy əlavə edildi",
-                message: "Elmi rəhbəriniz tədqiqat planınıza rəy yazdı.",
-                meta: "Süni intellektin təhsildə tətbiqi imkanları",
-                time: "Dünən 17:20", isUnread: true
-            ),
-            NotificationItem(
-                iconSystemName: "checkmark.seal.fill", iconTint: AppColors.primary,
-                iconBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1),
-                title: "Tədqiqat planı təsdiq edildi",
-                message: "Tədqiqat planınız rəhbər tərəfindən təsdiqləndi.",
-                meta: "Tədqiqatlar",
-                time: "Dünən 14:05", isUnread: false
-            )
-        ]),
-        NotificationGroup(title: "Bu həftə", items: [
-            NotificationItem(
-                iconSystemName: "gearshape.fill", iconTint: AppColors.textMuted,
-                iconBackground: UIColor(red: 0.94, green: 0.95, blue: 0.97, alpha: 1),
-                title: "Sistem yenilənməsi",
-                message: "ElmiYol platforması yeni funksiyalarla yeniləndi.",
-                meta: "Sistem",
-                time: "21 May 2025", isUnread: false
-            )
-        ])
-    ]
+    private func loadFromStore() {
+        let unread = NotificationStore.shared.unread
+        let calendar = Calendar.current
+
+        func makeItem(_ n: AppNotification) -> NotificationItem {
+            let style = Self.style(for: n.kind)
+            return NotificationItem(
+                id: n.id, kind: n.kind, person: n.person,
+                iconSystemName: style.icon, iconTint: style.tint, iconBackground: style.background,
+                title: n.title, message: n.message, meta: n.meta,
+                time: Self.relativeTime(n.createdAt), isUnread: true)
+        }
+
+        let today = unread.filter { calendar.isDateInToday($0.createdAt) }.map(makeItem)
+        let earlier = unread.filter { !calendar.isDateInToday($0.createdAt) }.map(makeItem)
+
+        var groups: [NotificationGroup] = []
+        if !today.isEmpty { groups.append(NotificationGroup(title: "Bu gün", items: today)) }
+        if !earlier.isEmpty { groups.append(NotificationGroup(title: "Əvvəllər", items: earlier)) }
+        allGroups = groups
+    }
+
+    private static func style(for kind: AppNotification.Kind) -> (icon: String, tint: UIColor, background: UIColor) {
+        switch kind {
+        case .message:  return ("message.fill", AppColors.primary, AppColors.tintBlue)
+        case .meeting:  return ("calendar", AppColors.purple, AppColors.tintPurple)
+        case .research: return ("doc.text.fill", AppColors.primary, AppColors.tintBlue)
+        case .system:   return ("gearshape.fill", AppColors.orange, AppColors.tintOrange)
+        }
+    }
+
+    private static func relativeTime(_ date: Date) -> String {
+        let f = RelativeDateTimeFormatter()
+        f.locale = Locale(identifier: "az")
+        f.unitsStyle = .short
+        return f.localizedString(for: date, relativeTo: Date())
+    }
 }
 
 private final class NotificationCardRowView: UIView {

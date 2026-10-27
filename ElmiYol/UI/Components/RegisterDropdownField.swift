@@ -22,7 +22,7 @@ final class RegisterDropdownField: UIView {
 
     private let iconImageView: UIImageView = {
         let iv = UIImageView()
-        iv.tintColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        iv.tintColor = AppColors.primary
         iv.contentMode = .scaleAspectFit
         return iv
     }()

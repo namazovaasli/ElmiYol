@@ -232,7 +232,7 @@ final class SideMenuViewController: UIViewController {
 
     private let footerCardView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(red: 0.93, green: 0.95, blue: 1, alpha: 1)
+        view.backgroundColor = AppColors.tintBlue
         view.layer.cornerRadius = 14
         return view
     }()
@@ -255,7 +255,7 @@ final class SideMenuViewController: UIViewController {
 
     private let copyrightLabel: UILabel = {
         let label = UILabel()
-        label.text = "© 2025 Bütün hüquqlar qorunur."
+        label.text = "© 2026 Bütün hüquqlar qorunur."
         label.font = .systemFont(ofSize: 11, weight: .regular)
         label.textColor = AppColors.textSecondary
         return label

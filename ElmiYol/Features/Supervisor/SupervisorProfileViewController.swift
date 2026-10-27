@@ -81,7 +81,7 @@ final class SupervisorProfileViewController: UIViewController {
         contentView.addSubview(settingsSection)
 
         let footer = UILabel()
-        footer.text = "ElmiYol v1.0.0\n© 2025 Bütün hüquqlar qorunur."
+        footer.text = "ElmiYol v1.0.0\n© 2026 Bütün hüquqlar qorunur."
         footer.font = .systemFont(ofSize: 12)
         footer.textColor = AppColors.textMuted
         footer.textAlignment = .center
@@ -143,7 +143,7 @@ final class SupervisorProfileViewController: UIViewController {
         let avatarView = UIView()
         avatarView.backgroundColor = UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
         avatarView.layer.cornerRadius = 36
-        let avatarIcon = UIImageView(image: UIImage(systemName: "person.fill"))
+        let avatarIcon = UIImageView(image: UIImage(named: "user_avatar"))
         avatarIcon.tintColor = AppColors.primary
         avatarView.addSubview(avatarIcon)
         avatarIcon.snp.makeConstraints { $0.center.equalToSuperview(); $0.width.height.equalTo(28) }
@@ -177,26 +177,46 @@ final class SupervisorProfileViewController: UIViewController {
         emailLabel.text = "✉ \(UserSession.shared.displayEmail)"
         emailLabel.font = .systemFont(ofSize: 13)
         emailLabel.textColor = AppColors.textSecondary
+        emailLabel.adjustsFontSizeToFitWidth = true
+        emailLabel.minimumScaleFactor = 0.8
 
         let phoneLabel = UILabel()
         phoneLabel.text = "📞 \(UserSession.shared.displayPhone)"
         phoneLabel.font = .systemFont(ofSize: 13)
         phoneLabel.textColor = AppColors.textSecondary
 
+        let editButton = UIButton(type: .system)
+        var config = UIButton.Configuration.plain()
+        config.image = UIImage(systemName: "pencil")
+        config.imagePlacement = .leading
+        config.imagePadding = 4
+        config.attributedTitle = AttributedString("Redaktə et", attributes: AttributeContainer([
+            .font: UIFont.systemFont(ofSize: 13, weight: .semibold)
+        ]))
+        config.baseForegroundColor = AppColors.primary
+        editButton.configuration = config
+        editButton.addAction(UIAction { [weak self] _ in
+            self?.handleEditProfileTap()
+        }, for: .touchUpInside)
+        
         card.addSubview(avatarView)
         card.addSubview(nameLabel)
         card.addSubview(roleBadge)
         card.addSubview(emailLabel)
         card.addSubview(phoneLabel)
-
+        card.addSubview(editButton)
+        
         avatarView.snp.makeConstraints { make in
             make.top.leading.equalToSuperview().offset(20)
             make.width.height.equalTo(72)
-            make.bottom.equalToSuperview().offset(-20)
+        }
+        editButton.snp.makeConstraints { make in
+            make.top.trailing.equalToSuperview().inset(20)
         }
         nameLabel.snp.makeConstraints { make in
-            make.top.equalTo(avatarView)
+            make.top.equalTo(avatarView).offset(8)
             make.leading.equalTo(avatarView.snp.trailing).offset(16)
+            make.trailing.lessThanOrEqualTo(editButton.snp.leading).offset(-8)
         }
         roleBadge.snp.makeConstraints { make in
             make.top.equalTo(nameLabel.snp.bottom).offset(6)
@@ -204,15 +224,26 @@ final class SupervisorProfileViewController: UIViewController {
             make.height.equalTo(24)
         }
         emailLabel.snp.makeConstraints { make in
-            make.top.equalTo(roleBadge.snp.bottom).offset(10)
-            make.leading.equalTo(nameLabel)
+            make.top.equalTo(avatarView.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview().inset(20)
         }
         phoneLabel.snp.makeConstraints { make in
-            make.top.equalTo(emailLabel.snp.bottom).offset(4)
-            make.leading.equalTo(nameLabel)
+            make.top.equalTo(emailLabel.snp.bottom).offset(6)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalToSuperview().offset(-20)
         }
         return card
     }
+    private func handleEditProfileTap() {
+        let alert = UIAlertController(
+            title: "Profil redaktəsi",
+            message: "Profil məlumatlarını redaktə etmək tezliklə mövcud olacaq.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Bağla", style: .default))
+        present(alert, animated: true)
+    }
+    
 
     private func makeStatsSection() -> UIView {
         let container = UIView()

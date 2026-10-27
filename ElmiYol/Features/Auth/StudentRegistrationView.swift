@@ -151,12 +151,12 @@ struct StudentRegistrationView: View {
         .onChange(of: university) { _, newValue in
             faculty = nil
             speciality = nil
-            guard let newValue else { catalog.clearFaculties(); return }
+            guard let newValue else { Task { @MainActor in await Task.yield(); catalog.clearFaculties() }; return }
             Task { await catalog.loadFaculties(universityId: newValue.id) }
         }
         .onChange(of: faculty) { _, newValue in
             speciality = nil
-            guard let newValue, let university else { catalog.clearSpecialities(); return }
+            guard let newValue, let university else { Task { @MainActor in await Task.yield(); catalog.clearSpecialities() }; return }
             Task { await catalog.loadSpecialities(universityId: university.id, facultyId: newValue.id) }
         }
     }

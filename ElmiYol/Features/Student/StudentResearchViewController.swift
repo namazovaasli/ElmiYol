@@ -74,7 +74,7 @@ final class StudentResearchViewController: UIViewController {
         )
         if let range = text.range(of: "Yol") {
             let nsRange = NSRange(range, in: text)
-            attributed.addAttribute(.foregroundColor, value: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1), range: nsRange)
+            attributed.addAttribute(.foregroundColor, value: AppColors.primary, range: nsRange)
         }
         label.attributedText = attributed
         return label
@@ -155,11 +155,11 @@ final class StudentResearchViewController: UIViewController {
         config.attributedTitle = AttributedString("Yeni tədqiqat əlavə et", attributes: AttributeContainer([
             .font: UIFont.systemFont(ofSize: 15, weight: .semibold)
         ]))
-        config.baseForegroundColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        config.baseForegroundColor = AppColors.primary
         button.configuration = config
         button.layer.cornerRadius = 16
         button.layer.borderWidth = 1.5
-        button.layer.borderColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1).cgColor
+        button.layer.borderColor = AppColors.primary.cgColor
         return button
     }()
 
@@ -339,10 +339,10 @@ final class StudentResearchViewController: UIViewController {
             ResearchItem(
                 id: "1",
                 iconSystemName: "doc.text.fill",
-                iconTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+                iconTint: AppColors.green,
                 iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
                 statusText: "Aktiv",
-                statusTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+                statusTint: AppColors.green,
                 statusBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
                 titleText: "Süni intellektin təhsildə tətbiqi imkanları",
                 personText: "Prof. Dr. İlqar Məmmədov",
@@ -356,7 +356,7 @@ final class StudentResearchViewController: UIViewController {
                 iconTint: UIColor(red: 0.55, green: 0.35, blue: 0.85, alpha: 1),
                 iconBackground: UIColor(red: 0.93, green: 0.9, blue: 1, alpha: 1),
                 statusText: "Aktiv",
-                statusTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+                statusTint: AppColors.green,
                 statusBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
                 titleText: "Mobil tətbiqlərdə təhlükəsizlik yanaşmaları",
                 personText: "Prof. Dr. Aygün Əliyeva",
@@ -387,10 +387,10 @@ final class StudentResearchViewController: UIViewController {
             ResearchItem(
                 id: "4",
                 iconSystemName: "checkmark.seal.fill",
-                iconTint: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1),
+                iconTint: AppColors.primary,
                 iconBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1),
                 statusText: "Tamamlanmış",
-                statusTint: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1),
+                statusTint: AppColors.primary,
                 statusBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1),
                 titleText: "Elektron təhsil platformalarının müqayisəli təhlili",
                 personText: "Prof. Dr. Aygün Əliyeva",
@@ -475,14 +475,14 @@ private final class ResearchTabButton: UIButton {
             .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
         ]))
         config.cornerStyle = .capsule
-        config.baseBackgroundColor = .white
+        config.baseBackgroundColor = AppColors.surface
         config.baseForegroundColor = UIColor(red: 0.13, green: 0.16, blue: 0.24, alpha: 1)
         self.configuration = config
     }
 
     func setSelected(_ selected: Bool) {
         var config = configuration
-        config?.baseBackgroundColor = selected ? UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1) : .white
+        config?.baseBackgroundColor = selected ? AppColors.primary : AppColors.surface
         config?.baseForegroundColor = selected ? .white : UIColor(red: 0.13, green: 0.16, blue: 0.24, alpha: 1)
         configuration = config
     }
@@ -564,7 +564,7 @@ private final class ResearchCardCell: UITableViewCell {
 
     private let progressFillView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        view.backgroundColor = AppColors.primary
         view.layer.cornerRadius = 4
         return view
     }()

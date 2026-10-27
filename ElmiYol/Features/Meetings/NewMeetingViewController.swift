@@ -38,7 +38,7 @@ final class NewMeetingViewController: UIViewController {
         label.textColor = AppColors.textPrimary
         return label
     }()
-
+    
     private let subtitleLabel: UILabel = {
         let label = UILabel()
         label.text = "Görüş üçün məlumatları daxil edin."
@@ -211,6 +211,13 @@ final class NewMeetingViewController: UIViewController {
         guard !didNavigate else { return }
         didNavigate = true
 
+        NotificationStore.shared.add(
+            kind: .meeting,
+            title: "Yeni görüş yaradıldı",
+            message: "\(titleField.value) görüşü planlaşdırıldı",
+            meta: titleField.value,
+            person: personField.selectedValue ?? ""
+        )
         let alert = UIAlertController(
             title: "Görüş yaradıldı",
             message: "Yeni görüş uğurla planlaşdırıldı.",

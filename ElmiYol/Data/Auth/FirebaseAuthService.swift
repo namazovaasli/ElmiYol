@@ -269,34 +269,29 @@ final class FirebaseAuthService {
             .compactMap { $0 }
             .filter { !$0.isEmpty }
             .joined(separator: " ")
-        let change = user.createProfileChangeRequest()
-        change.displayName = name.isEmpty ? user.displayName : name
-        change.commitChanges { [weak self] error in
-            if let error {
-                completion(.failure(error))
-                return
-            }
-            guard let self else {
-                completion(.failure(FirebaseAuthServiceError.missingCurrentUser))
-                return
-            }
-            _ = self
-            var values = fields
-            values["uid"] = user.uid
-            values["email"] = user.email ?? fields["email"]
-            values["updatedAt"] = FieldValue.serverTimestamp()
-            
-            let db = Firestore.firestore()
-            let batch = db.batch()
-            batch.setData(values, forDocument: db.collection("users").document(user.uid), merge: true)
-            
-            if !publicFields.isEmpty {
-                var publicValues = publicFields
-                publicValues["uid"] = user.uid
-                batch.setData(publicValues, forDocument: db.collection("publicProfiles").document(user.uid), merge: true)
-            }
-            
-            batch.commit { error in
+
+        var values = fields
+        values["uid"] = user.uid
+        values["email"] = user.email ?? fields["email"]
+        values["updatedAt"] = FieldValue.serverTimestamp()
+
+        let db = Firestore.firestore()
+        let batch = db.batch()
+        batch.setData(values, forDocument: db.collection("users").document(user.uid), merge: true)
+        if !publicFields.isEmpty {
+            var publicValues = publicFields
+            publicValues["uid"] = user.uid
+            batch.setData(publicValues, forDocument: db.collection("publicProfiles").document(user.uid), merge: true)
+        }
+
+        if !name.isEmpty, name != user.displayName {
+            let change = user.createProfileChangeRequest()
+            change.displayName = name
+            change.commitChanges { _ in }
+        }
+
+        batch.commit { error in
+            DispatchQueue.main.async {
                 if let error {
                     completion(.failure(error))
                 } else {

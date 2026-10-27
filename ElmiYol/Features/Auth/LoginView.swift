@@ -44,27 +44,10 @@ struct LoginView: View {
                 PrimaryActionButton(title: "Daxil ol", isLoading: auth.isBusy) {
                     Task { await auth.signIn(email: email, password: password) }
                 }
+                
+                OrDivider()
 
-                HStack(spacing: 12) {
-                    Rectangle().fill(ElmiYolStyle.border).frame(height: 1)
-                    Text("və ya").font(.system(size: 14)).foregroundStyle(ElmiYolStyle.muted)
-                    Rectangle().fill(ElmiYolStyle.border).frame(height: 1)
-                }
-
-                Button {
-                    Task { await auth.signInWithGoogle() }
-                } label: {
-                    HStack(spacing: 10) {
-                        Image("google_icon").resizable().scaledToFit().frame(width: 20, height: 20)
-                        Text("Google ilə davam et")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(ElmiYolStyle.ink)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 52)
-                    .background(.white, in: RoundedRectangle(cornerRadius: 15))
-                    .overlay(RoundedRectangle(cornerRadius: 15).stroke(ElmiYolStyle.border, lineWidth: 1))
-                }
-                .disabled(auth.isBusy)
+                GoogleContinueButton()
 
                 HStack(spacing: 4) {
                     Text("Hesabınız yoxdur?").foregroundStyle(ElmiYolStyle.secondary)

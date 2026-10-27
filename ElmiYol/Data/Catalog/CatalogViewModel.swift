@@ -35,6 +35,7 @@ final class CatalogViewModel: ObservableObject {
     }
 
     func loadUniversities() async {
+        await Task.yield()
         guard universities.isEmpty, !isLoadingUniversities else { return }
         isLoadingUniversities = true
         universitiesError = nil
@@ -47,6 +48,7 @@ final class CatalogViewModel: ObservableObject {
     }
 
     func loadFaculties(universityId: String) async {
+        await Task.yield()
         facultiesRequest += 1
         let request = facultiesRequest
         faculties = []
@@ -65,6 +67,7 @@ final class CatalogViewModel: ObservableObject {
     }
 
     func loadSpecialities(universityId: String, facultyId: String) async {
+        await Task.yield()
         specialitiesRequest += 1
         let request = specialitiesRequest
         specialities = []

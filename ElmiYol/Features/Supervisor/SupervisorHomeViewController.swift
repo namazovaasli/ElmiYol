@@ -50,7 +50,7 @@ final class SupervisorHomeViewController: UIViewController {
         )
         if let range = text.range(of: "Yol") {
             let nsRange = NSRange(range, in: text)
-            attributed.addAttribute(.foregroundColor, value: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1), range: nsRange)
+            attributed.addAttribute(.foregroundColor, value: AppColors.primary, range: nsRange)
         }
         label.attributedText = attributed
         return label
@@ -178,7 +178,7 @@ final class SupervisorHomeViewController: UIViewController {
 
     private lazy var statResearchView = StatItemView(
         iconSystemName: "calendar",
-        iconTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+        iconTint: AppColors.green,
         iconBackground: UIColor(red: 0.24, green: 0.68, blue: 0.48, alpha: 1),
         value: "3",
         caption: "Aktiv tədqiqatlar"
@@ -229,14 +229,14 @@ final class SupervisorHomeViewController: UIViewController {
 
     private lazy var studentsQuickView = QuickAccessItemView(
         iconSystemName: "person.2.fill",
-        iconTint: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1),
+        iconTint: AppColors.primary,
         iconBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1),
         titleText: "Tələbələrim"
     )
 
     private lazy var researchQuickView = QuickAccessItemView(
         iconSystemName: "folder.fill",
-        iconTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+        iconTint: AppColors.green,
         iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
         titleText: "Tədqiqatlar"
     )
@@ -291,7 +291,7 @@ final class SupervisorHomeViewController: UIViewController {
         timeText: "14:00",
         modeText: "Online (Zoom)",
         badgeText: "Sabah",
-        badgeTint: UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1),
+        badgeTint: AppColors.primary,
         badgeBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
     )
 
@@ -304,7 +304,7 @@ final class SupervisorHomeViewController: UIViewController {
         timeText: "11:00",
         modeText: "Online (Google Meet)",
         badgeText: "3 gün sonra",
-        badgeTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+        badgeTint: AppColors.green,
         badgeBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1)
     )
 
@@ -329,7 +329,7 @@ final class SupervisorHomeViewController: UIViewController {
 
     private lazy var aiResearchRow = SupervisorResearchRowView(
         iconSystemName: "doc.text.fill",
-        iconTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+        iconTint: AppColors.green,
         iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
         titleText: "Süni intellektin təhsildə tətbiqi imkanları",
         personText: "Əsli Namazova",
@@ -375,7 +375,7 @@ final class SupervisorHomeViewController: UIViewController {
 
     private lazy var messageNotificationRow = NotificationRowView(
         iconSystemName: "bubble.left.fill",
-        iconTint: UIColor(red: 0.16, green: 0.6, blue: 0.4, alpha: 1),
+        iconTint: AppColors.green,
         iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
         messageText: "Nigar Əliyeva sizə mesaj göndərdi.",
         timeText: "5 saat əvvəl"
@@ -838,7 +838,7 @@ private final class SectionHeaderView: UIView {
         config.imagePadding = 4
         config.contentInsets = .zero
         button.configuration = config
-        button.tintColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        button.tintColor = AppColors.primary
         return button
     }()
 
@@ -850,7 +850,7 @@ private final class SectionHeaderView: UIView {
         config?.attributedTitle = AttributedString("Hamısına bax", attributes: AttributeContainer([
             .font: UIFont.systemFont(ofSize: 14, weight: .semibold)
         ]))
-        config?.baseForegroundColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        config?.baseForegroundColor = AppColors.primary
         seeAllButton.configuration = config
 
         addSubview(titleLabel)
@@ -889,14 +889,14 @@ private final class SupervisorMeetingRowView: UIView {
     private let dateDayLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18, weight: .bold)
-        label.textColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        label.textColor = AppColors.primary
         label.textAlignment = .center
         return label
     }()
     private let dateMonthYearLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 11, weight: .medium)
-        label.textColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        label.textColor = AppColors.primary
         label.textAlignment = .center
         label.numberOfLines = 2
         return label
@@ -1122,7 +1122,7 @@ private final class SupervisorResearchRowView: UIView {
     }()
     private let progressFillView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(red: 0.16, green: 0.38, blue: 0.92, alpha: 1)
+        view.backgroundColor = AppColors.primary
         view.layer.cornerRadius = 4
         return view
     }()
