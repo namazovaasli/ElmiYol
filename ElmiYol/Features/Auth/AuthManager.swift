@@ -151,6 +151,8 @@ final class AuthManager: ObservableObject {
                 message: "Hesabınız uğurla yaradıldı. ElmiYol-a xoş gəlmisiniz!"
             )
             NotificationStore.shared.refreshSessionCount()
+            Task { await AvatarStore.shared.refresh() }
+            PlannerStore.shared.start()
             self.profileLoadGeneration += 1
             self.user = user
             self.role = .student
@@ -181,6 +183,8 @@ final class AuthManager: ObservableObject {
                 message: "Hesabınız uğurla yaradıldı. ElmiYol-a xoş gəlmisiniz!"
             )
             NotificationStore.shared.refreshSessionCount()
+            Task { await AvatarStore.shared.refresh() }
+            PlannerStore.shared.start()
             self.profileLoadGeneration += 1
             self.user = user
             self.role = .supervisor
@@ -194,6 +198,7 @@ final class AuthManager: ObservableObject {
             try FirebaseAuthService.shared.signOut()
             GIDSignIn.sharedInstance.signOut()
             UserSession.shared.logout()
+            PlannerStore.shared.stop()
             providerFirstName = ""
             providerLastName = ""
             user = nil
@@ -268,6 +273,8 @@ final class AuthManager: ObservableObject {
             if let profile, let role = profile.role {
                 profile.applyToSession()
                 NotificationStore.shared.refreshSessionCount()
+                Task { await AvatarStore.shared.refresh() }
+                PlannerStore.shared.start()
                 self.role = role
                 needsRoleSelection = false
             } else {

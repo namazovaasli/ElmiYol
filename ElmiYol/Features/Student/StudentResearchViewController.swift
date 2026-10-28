@@ -21,6 +21,7 @@ struct ResearchItem {
     let startDateText: String
     let endDateText: String
     let progress: Double
+    var personUid: String = ""
 }
 
 enum ResearchTab: Int {

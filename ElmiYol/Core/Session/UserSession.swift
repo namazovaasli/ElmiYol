@@ -63,5 +63,6 @@ final class UserSession {
         currentRole = nil
         unreadNotificationsCount = 0
         UnreadMessagesObserver.shared.stop()
+        Task { @MainActor in AvatarStore.shared.clear() }
     }
 }

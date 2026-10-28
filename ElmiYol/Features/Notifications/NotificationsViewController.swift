@@ -9,11 +9,7 @@ import UIKit
 import SnapKit
 
 private enum NotificationFilter: Int {
-    case all
-    case unread
-    case research
-    case meetings
-    case system
+    case all, unread, read, messages, research, meetings, system
 }
 
 private struct NotificationGroup {
@@ -264,6 +260,8 @@ final class NotificationsViewController: UIViewController {
         let options: [(String, NotificationFilter)] = [
             ("Hamısı", .all),
             ("Oxunmamış", .unread),
+            ("Oxunmuş", .read),
+            ("Mesajlar", .messages),
             ("Tədqiqatlar", .research),
             ("Görüşlər", .meetings),
             ("Sistem", .system)
@@ -275,12 +273,10 @@ final class NotificationsViewController: UIViewController {
                 self?.reloadNotifications()
             })
         }
+        alert.addAction(UIAlertAction(title: "Oxunmuşları sil", style: .destructive) { _ in
+            NotificationStore.shared.deleteAllRead()
+        })
         alert.addAction(UIAlertAction(title: "Ləğv et", style: .cancel))
-        if let popover = alert.popoverPresentationController {
-            popover.sourceView = filterButton
-            popover.sourceRect = filterButton.bounds
-        }
-        present(alert, animated: true)
     }
 
     private func markAllNotificationsRead() {
@@ -306,7 +302,18 @@ final class NotificationsViewController: UIViewController {
     private func reloadNotifications() {
         notificationsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
-        for group in filteredGroups() {
+        let groups = filteredGroups()
+        if groups.isEmpty {
+            let empty = UILabel()
+            empty.text = "Bildiriş yoxdur"
+            empty.textAlignment = .center
+            empty.font = .systemFont(ofSize: 14)
+            empty.textColor = AppColors.textMuted
+            notificationsStackView.addArrangedSubview(empty)
+            return
+        }
+
+        for group in groups {
             let sectionLabel = UILabel()
             sectionLabel.text = group.title
             sectionLabel.font = .systemFont(ofSize: 16, weight: .bold)
@@ -315,8 +322,9 @@ final class NotificationsViewController: UIViewController {
 
             for item in group.items {
                 let row = NotificationCardRowView(item: item)
-                row.onTap = { [weak self] in
-                    self?.handleNotificationTap(item)
+                row.onTap = { [weak self] in self?.handleNotificationTap(item) }
+                row.onDelete = {
+                    NotificationStore.shared.delete(id: item.id)
                 }
                 notificationsStackView.addArrangedSubview(row)
             }
@@ -324,19 +332,22 @@ final class NotificationsViewController: UIViewController {
     }
 
     private func handleNotificationTap(_ item: NotificationItem) {
-        guard !didNavigate else { return }
-        didNavigate = true
+        if item.isUnread { NotificationStore.shared.markRead(id: item.id) }
 
-        NotificationStore.shared.markRead(id: item.id)
+        switch item.kind {
+        case .system:
+            return
 
-        if item.kind == .message {
+        case .message:
+            guard !didNavigate else { return }
+            didNavigate = true
             tabBarController?.selectedIndex = NotificationsOrigin.messages.rawValue
             tabBarController?.tabBar.isHidden = false
             navigationController?.popViewControllerWithFade()
-            return
-        }
 
-        if item.kind == .meeting {
+        case .meeting:
+            guard !didNavigate else { return }
+            didNavigate = true
             let data = MeetingDetailData(
                 titleText: item.meta.isEmpty ? item.title : item.meta,
                 personText: item.person,
@@ -350,26 +361,28 @@ final class NotificationsViewController: UIViewController {
             let detailVC = MeetingDetailViewController(data: data)
             detailVC.hidesBottomBarWhenPushed = true
             navigationController?.pushViewControllerWithFade(detailVC)
-            return
-        }
 
-        let researchItem = ResearchItem(
-            id: item.id,
-            iconSystemName: "doc.text.fill",
-            iconTint: AppColors.primary,
-            iconBackground: AppColors.tintBlue,
-            statusText: "Aktiv",
-            statusTint: AppColors.green,
-            statusBackground: AppColors.tintGreen,
-            titleText: item.meta.isEmpty ? item.title : item.meta,
-            personText: item.person,
-            startDateText: item.time,
-            endDateText: "—",
-            progress: 0
-        )
-        let detailVC = ResearchDetailViewController(item: researchItem)
-        detailVC.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewControllerWithFade(detailVC)
+        case .research:
+            guard !didNavigate else { return }
+            didNavigate = true
+            let researchItem = ResearchItem(
+                id: item.id,
+                iconSystemName: "doc.text.fill",
+                iconTint: AppColors.primary,
+                iconBackground: AppColors.tintBlue,
+                statusText: "Aktiv",
+                statusTint: AppColors.green,
+                statusBackground: AppColors.tintGreen,
+                titleText: item.meta.isEmpty ? item.title : item.meta,
+                personText: item.person,
+                startDateText: item.time,
+                endDateText: "—",
+                progress: 0
+            )
+            let detailVC = ResearchDetailViewController(item: researchItem)
+            detailVC.hidesBottomBarWhenPushed = true
+            navigationController?.pushViewControllerWithFade(detailVC)
+        }
     }
 
     private func filteredGroups() -> [NotificationGroup] {
@@ -378,16 +391,13 @@ final class NotificationsViewController: UIViewController {
         return allGroups.compactMap { group in
             let filteredItems: [NotificationItem]
             switch currentFilter {
-            case .unread:
-                filteredItems = group.items.filter { $0.isUnread }
-            case .research:
-                filteredItems = group.items.filter { $0.kind == .research }
-            case .meetings:
-                filteredItems = group.items.filter { $0.kind == .meeting }
-            case .system:
-                filteredItems = group.items.filter { $0.kind == .system }
-            case .all:
-                filteredItems = group.items
+                case .unread:   filteredItems = group.items.filter { $0.isUnread }
+                case .read:     filteredItems = group.items.filter { !$0.isUnread }
+                case .messages: filteredItems = group.items.filter { $0.kind == .message }
+                case .research: filteredItems = group.items.filter { $0.kind == .research }
+                case .meetings: filteredItems = group.items.filter { $0.kind == .meeting }
+                case .system:   filteredItems = group.items.filter { $0.kind == .system }
+                case .all:      filteredItems = group.items
             }
             guard !filteredItems.isEmpty else { return nil }
             return NotificationGroup(title: group.title, items: filteredItems)
@@ -395,24 +405,22 @@ final class NotificationsViewController: UIViewController {
     }
 
     private func loadFromStore() {
-        let unread = NotificationStore.shared.unread
-        let calendar = Calendar.current
-
         func makeItem(_ n: AppNotification) -> NotificationItem {
             let style = Self.style(for: n.kind)
             return NotificationItem(
                 id: n.id, kind: n.kind, person: n.person,
                 iconSystemName: style.icon, iconTint: style.tint, iconBackground: style.background,
                 title: n.title, message: n.message, meta: n.meta,
-                time: Self.relativeTime(n.createdAt), isUnread: true)
+                time: Self.relativeTime(n.createdAt), isUnread: !n.isRead)
         }
 
-        let today = unread.filter { calendar.isDateInToday($0.createdAt) }.map(makeItem)
-        let earlier = unread.filter { !calendar.isDateInToday($0.createdAt) }.map(makeItem)
+        let all = NotificationStore.shared.allItems
+        let unread = all.filter { !$0.isRead }.map(makeItem)
+        let read = all.filter { $0.isRead }.map(makeItem)
 
         var groups: [NotificationGroup] = []
-        if !today.isEmpty { groups.append(NotificationGroup(title: "Bu gün", items: today)) }
-        if !earlier.isEmpty { groups.append(NotificationGroup(title: "Əvvəllər", items: earlier)) }
+        if !unread.isEmpty { groups.append(NotificationGroup(title: "Oxunmamış", items: unread)) }
+        if !read.isEmpty { groups.append(NotificationGroup(title: "Oxunmuş", items: read)) }
         allGroups = groups
     }
 
@@ -436,6 +444,7 @@ final class NotificationsViewController: UIViewController {
 private final class NotificationCardRowView: UIView {
 
     var onTap: (() -> Void)?
+    var onDelete: (() -> Void)?
 
     init(item: NotificationItem) {
         super.init(frame: .zero)
@@ -470,7 +479,7 @@ private final class NotificationCardRowView: UIView {
         messageLabel.numberOfLines = 0
 
         let metaLabel = UILabel()
-        metaLabel.text = "📁 \(item.meta)"
+        metaLabel.text = item.meta.isEmpty ? nil : "📁 \(item.meta)"
         metaLabel.font = .systemFont(ofSize: 12)
         metaLabel.textColor = AppColors.textMuted
 
@@ -496,6 +505,18 @@ private final class NotificationCardRowView: UIView {
                 make.trailing.equalToSuperview().offset(-16)
                 make.centerY.equalTo(titleLabel)
                 make.width.height.equalTo(8)
+            }
+        }
+        else {
+            let deleteButton = UIButton(type: .system)
+            deleteButton.setImage(UIImage(systemName: "trash"), for: .normal)
+            deleteButton.tintColor = AppColors.badgeRed
+            deleteButton.addAction(UIAction { [weak self] _ in self?.onDelete?() }, for: .touchUpInside)
+            containerView.addSubview(deleteButton)
+            deleteButton.snp.makeConstraints { make in
+                make.trailing.equalToSuperview().offset(-8)
+                make.bottom.equalToSuperview().offset(-6)
+                make.width.height.equalTo(32)
             }
         }
 

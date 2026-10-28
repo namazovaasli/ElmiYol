@@ -65,6 +65,10 @@ final class ChatViewModel: ObservableObject {
         await markRead()
     }
 
+    func clearErrorMessage() {
+        errorMessage = nil
+    }
+
     func stop() {
         messagesListener?.remove()
         readListener?.remove()
@@ -74,8 +78,9 @@ final class ChatViewModel: ObservableObject {
     }
 
     private func receive(_ items: [ChatMessageDoc]) {
-        messages = items
-        if isActive, let last = items.last, last.senderId != me {
+        let visible = items.filter { !$0.hiddenFor.contains(me ?? "") }
+        messages = visible
+        if isActive, let last = visible.last, last.senderId != me {
             Task { await markRead() }
         }
     }
@@ -102,6 +107,38 @@ final class ChatViewModel: ObservableObject {
         }
     }
 
+    func edit(_ message: ChatMessageDoc, to rawText: String) async {
+        let text = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, message.isMine else { return }
+        do {
+            try await ChatRepository.shared.editMessage(
+                chatId: chatId, messageId: message.id, text: text,
+                isLast: messages.last?.id == message.id)
+        } catch {
+            errorMessage = "Mesaj redaktə olunmadı."
+        }
+    }
+
+    func hide(_ ids: [String]) async {
+        guard let me, !ids.isEmpty else { return }
+        do {
+            try await ChatRepository.shared.hideMessages(chatId: chatId, messageIds: ids, for: me)
+        } catch {
+            errorMessage = "Mesajlar silinmədi."
+        }
+    }
+
+    func deleteForEveryone(_ ids: [String]) async {
+        let mine = messages.filter { ids.contains($0.id) && $0.isMine }.map(\.id)
+        guard !mine.isEmpty else { return }
+        do {
+            try await ChatRepository.shared.deleteMessages(
+                chatId: chatId, messageIds: mine, lastId: messages.last?.id)
+        } catch {
+            errorMessage = "Mesajlar silinmədi."
+        }
+    }
+    
     func sendFile(_ url: URL) async {
         guard let me else { return }
         isSending = true
@@ -134,19 +171,35 @@ struct ChatView: View {
     @StateObject private var vm: ChatViewModel
     @Environment(\.scenePhase) private var scenePhase
     @State private var draft = ""
+    @State private var editing: ChatMessageDoc?
+    @State private var editText = ""
+    @State private var selecting = false
+    @State private var selected = Set<String>()
+    @State private var showDeleteChoice = false
+    
+    private var canDeleteForAll: Bool {
+        let items = vm.messages.filter { selected.contains($0.id) }
+        return !items.isEmpty && items.allSatisfy { $0.isMine && !$0.deleted }
+    }
+    
+    private func exitSelection() {
+        selecting = false
+        selected = []
+    }
+    
     @State private var showImporter = false
-
+    
     private let name: String
     private let subtitle: String
     private let onBack: () -> Void
-
+    
     init(otherUid: String, otherName: String, subtitle: String, onBack: @escaping () -> Void) {
         _vm = StateObject(wrappedValue: ChatViewModel(otherUid: otherUid, otherName: otherName))
         self.name = otherName
         self.subtitle = subtitle
         self.onBack = onBack
     }
-
+    
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -163,19 +216,67 @@ struct ChatView: View {
         .fileImporter(isPresented: $showImporter, allowedContentTypes: [.item]) { result in
             if case .success(let url) = result { Task { await vm.sendFile(url) } }
         }
-        .sheet(item: $vm.openedFile) { file in
+        .sheet(item: Binding(
+            get: { vm.openedFile },
+            set: { newValue in
+                Task { @MainActor in vm.openedFile = newValue }
+            }
+        )) { file in
             SafariView(url: file.url).ignoresSafeArea()
         }
         .alert("Xəta", isPresented: Binding(
             get: { vm.errorMessage != nil },
-            set: { if !$0 { vm.errorMessage = nil } }
+            set: { if !$0 { Task { @MainActor in vm.clearErrorMessage() } } }
         )) {
             Button("Bağla", role: .cancel) {}
         } message: {
             Text(vm.errorMessage ?? "")
         }
+        .alert("Mesajı redaktə et", isPresented: Binding(
+            get: { editing != nil },
+            set: { if !$0 { editing = nil } }
+        )) {
+            TextField("Mesaj", text: $editText)
+            Button("Saxla") {
+                if let m = editing { Task { await vm.edit(m, to: editText) } }
+            }
+            Button("Ləğv et", role: .cancel) {}
+        }
+        .confirmationDialog("\(selected.count) mesaj silinsin?", isPresented: $showDeleteChoice, titleVisibility: .visible) {
+            Button("Məndən sil") {
+                let ids = Array(selected)
+                Task { await vm.hide(ids) }
+                exitSelection()
+            }
+            if canDeleteForAll {
+                Button("Hər ikisindən sil", role: .destructive) {
+                    let ids = Array(selected)
+                    Task { await vm.deleteForEveryone(ids) }
+                    exitSelection()
+                }
+            }
+            Button("Ləğv et", role: .cancel) {
+                if !selecting { selected = [] }
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if selecting {
+                HStack {
+                    Button("Ləğv et") { exitSelection() }
+                    Spacer()
+                    Text("\(selected.count) seçildi").font(.system(size: 14, weight: .semibold))
+                    Spacer()
+                    Button { showDeleteChoice = true } label: { Image(systemName: "trash") }
+                        .disabled(selected.isEmpty)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .background(ElmiYolStyle.surface)
+                .overlay(alignment: .top) { Divider() }
+            }
+        }
     }
-
+    
     private var header: some View {
         HStack(spacing: 12) {
             Button(action: onBack) {
@@ -198,7 +299,7 @@ struct ChatView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(.white)
+        .background(ElmiYolStyle.surface)
         .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
     }
 
@@ -216,9 +317,36 @@ struct ChatView: View {
                         MessageBubble(
                             message: message,
                             isRead: vm.isRead(message),
-                            onTapFile: { Task { await vm.open(message) } }
+                            onTapFile: { if !selecting { Task { await vm.open(message) } } }
                         )
                         .id(message.id)
+                        .padding(.vertical, 2)
+                        .background(selected.contains(message.id) ? ElmiYolStyle.primary.opacity(0.15) : Color.clear)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            guard selecting else { return }
+                            if selected.contains(message.id) {
+                                selected.remove(message.id)
+                            } else {
+                                selected.insert(message.id)
+                            }
+                        }
+                        .contextMenu {
+                            if !message.deleted && message.isMine && message.kind == .text {
+                                Button {
+                                    editText = message.text
+                                    editing = message
+                                } label: { Label("Redaktə et", systemImage: "pencil") }
+                            }
+                            Button {
+                                selecting = true
+                                selected = [message.id]
+                            } label: { Label("Seç", systemImage: "checkmark.circle") }
+                            Button(role: .destructive) {
+                                selected = [message.id]
+                                showDeleteChoice = true
+                            } label: { Label("Sil", systemImage: "trash") }
+                        }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -270,53 +398,56 @@ struct ChatView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(.white)
+        .background(ElmiYolStyle.surface)
     }
-}
-
-private struct MessageBubble: View {
-    let message: ChatMessageDoc
-    let isRead: Bool
-    let onTapFile: () -> Void
-
-    var body: some View {
-        HStack {
-            if message.isMine { Spacer(minLength: 48) }
-            VStack(alignment: message.isMine ? .trailing : .leading, spacing: 4) {
-                if message.kind == .file {
-                    Button(action: onTapFile) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "doc.fill")
-                            Text(message.fileName ?? "Fayl").underline().lineLimit(2).multilineTextAlignment(.leading)
+    
+    private struct MessageBubble: View {
+        let message: ChatMessageDoc
+        let isRead: Bool
+        let onTapFile: () -> Void
+        
+        var body: some View {
+            HStack {
+                if message.isMine { Spacer(minLength: 48) }
+                VStack(alignment: message.isMine ? .trailing : .leading, spacing: 4) {
+                    if message.deleted {
+                        Text("Bu mesaj silindi").font(.system(size: 14).italic()).opacity(0.7)
+                    } else if message.kind == .file {
+                        Button(action: onTapFile) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "doc.fill")
+                                Text(message.fileName ?? "Fayl").underline().lineLimit(2).multilineTextAlignment(.leading)
+                            }
+                            .font(.system(size: 15))
                         }
-                        .font(.system(size: 15))
+                    } else {
+                        Text(message.text).font(.system(size: 15))
                     }
-                } else {
-                    Text(message.text).font(.system(size: 15))
-                }
-                HStack(spacing: 4) {
-                    Text(message.timeText)
-                    if message.isMine {
-                        Text(isRead ? "✓✓" : "✓").fontWeight(.bold)
+                    HStack(spacing: 4) {
+                        if message.edited && !message.deleted { Text("redaktə olunub") }
+                        Text(message.timeText)
+                        if message.isMine {
+                            Text(isRead ? "✓✓" : "✓").fontWeight(.bold)
+                        }
                     }
+                    .font(.system(size: 11))
+                    .opacity(0.75)
                 }
-                .font(.system(size: 11))
-                .opacity(0.75)
+                .foregroundStyle(message.isMine ? Color.white : ElmiYolStyle.ink)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    message.isMine ? ElmiYolStyle.primary : Color(uiColor: AppColors.separator),
+                    in: RoundedRectangle(cornerRadius: 16)
+                )
+                if !message.isMine { Spacer(minLength: 48) }
             }
-            .foregroundStyle(message.isMine ? Color.white : ElmiYolStyle.ink)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(
-                message.isMine ? ElmiYolStyle.primary : Color(uiColor: AppColors.separator),
-                in: RoundedRectangle(cornerRadius: 16)
-            )
-            if !message.isMine { Spacer(minLength: 48) }
         }
     }
-}
-
-struct SafariView: UIViewControllerRepresentable {
-    let url: URL
-    func makeUIViewController(context: Context) -> SFSafariViewController { SFSafariViewController(url: url) }
-    func updateUIViewController(_ controller: SFSafariViewController, context: Context) {}
+    
+    struct SafariView: UIViewControllerRepresentable {
+        let url: URL
+        func makeUIViewController(context: Context) -> SFSafariViewController { SFSafariViewController(url: url) }
+        func updateUIViewController(_ controller: SFSafariViewController, context: Context) {}
+    }
 }

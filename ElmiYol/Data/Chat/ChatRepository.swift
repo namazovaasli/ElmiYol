@@ -86,5 +86,40 @@ final class ChatRepository {
             "lastRead": [me: FieldValue.serverTimestamp()]
         ], merge: true)
     }
+    
+    func editMessage(chatId: String, messageId: String, text: String, isLast: Bool) async throws {
+        let chatRef = db.collection("chats").document(chatId)
+        let msgRef = chatRef.collection("messages").document(messageId)
+        let batch = db.batch()
+        batch.updateData(["text": text, "edited": true], forDocument: msgRef)
+        if isLast { batch.setData(["lastMessage": text], forDocument: chatRef, merge: true) }
+        try await batch.commit()
+    }
+
+    func hideMessages(chatId: String, messageIds: [String], for uid: String) async throws {
+        let col = db.collection("chats").document(chatId).collection("messages")
+        let batch = db.batch()
+        for id in messageIds {
+            batch.updateData(["hiddenFor": FieldValue.arrayUnion([uid])], forDocument: col.document(id))
+        }
+        try await batch.commit()
+    }
+
+    func deleteMessages(chatId: String, messageIds: [String], lastId: String?) async throws {
+        let chatRef = db.collection("chats").document(chatId)
+        let batch = db.batch()
+        for id in messageIds {
+            batch.updateData([
+                "deleted": true,
+                "text": "",
+                "filePath": FieldValue.delete(),
+                "fileName": FieldValue.delete()
+            ], forDocument: chatRef.collection("messages").document(id))
+        }
+        if let lastId, messageIds.contains(lastId) {
+            batch.setData(["lastMessage": "Mesaj silindi"], forDocument: chatRef, merge: true)
+        }
+        try await batch.commit()
+    }
 }
 

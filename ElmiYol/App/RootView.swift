@@ -5,12 +5,23 @@ import UIKit
 struct RootView: View {
     @EnvironmentObject private var auth: AuthManager
     @State private var launchStage: LaunchStage = .splash
+    
+    @State private var goingForward = true
+
+    private var slide: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: goingForward ? .trailing : .leading),
+            removal: .move(edge: goingForward ? .leading : .trailing)
+        )
+    }
 
     var body: some View {
         Group {
             switch launchStage {
             case .splash:
                 LaunchView(isLoading: auth.isResolvingSession, onContinue: continueFromSplash)
+                    .transition(slide)
+                    .gesture(swipeLeft { continueFromSplash() })
             case .onboardingFirst:
                 OnboardingFirstView(
                     onBack: { setLaunchStage(.splash) },
@@ -18,19 +29,25 @@ struct RootView: View {
                     onContinue: { setLaunchStage(.onboardingSecond) }
                 )
                 .swipeBack { setLaunchStage(.splash) }
+                .transition(slide)
+                .gesture(swipeLeft { setLaunchStage(.onboardingSecond) })
             case .onboardingSecond:
                 OnboardingSecondView(
                     onBack: { setLaunchStage(.onboardingFirst) },
                     onFinish: finishOnboarding
                 )
                 .swipeBack { setLaunchStage(.onboardingFirst) }
+                .transition(slide)
+                .gesture(swipeLeft { finishOnboarding() })
             case .complete:
                 if let role = auth.role {
                     LegacyMainAppView(role: role)
+                        .transition(slide)
                         .ignoresSafeArea()
                 } else {
-                    NavigationStack(path: $auth.path) {
+                    NavigationStack(path: $auth.path){
                         WelcomeView()
+                            .transition(slide)
                             .navigationDestination(for: AuthFlowDestination.self) { destination in
                                 switch destination {
                                 case .login:
@@ -47,7 +64,6 @@ struct RootView: View {
                 }
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: launchStage)
         .tint(ElmiYolStyle.primary)
         .alert(
             auth.alertTitle,
@@ -88,9 +104,28 @@ struct RootView: View {
         setLaunchStage(.complete)
     }
 
+    private func order(_ stage: LaunchStage) -> Int {
+        switch stage {
+        case .splash: return 0
+        case .onboardingFirst: return 1
+        case .onboardingSecond: return 2
+        case .complete: return 3
+        }
+    }
+
     private func setLaunchStage(_ stage: LaunchStage) {
-        withAnimation(.easeInOut(duration: 0.25)) {
+        goingForward = order(stage) >= order(launchStage)
+        withAnimation(.easeInOut(duration: 0.3)) {
             launchStage = stage
+        }
+    }
+
+    private func swipeLeft(_ action: @escaping () -> Void) -> some Gesture {
+        DragGesture(minimumDistance: 30).onEnded { value in
+            if value.translation.width < -60,
+               abs(value.translation.height) < abs(value.translation.width) {
+                action()
+            }
         }
     }
 }

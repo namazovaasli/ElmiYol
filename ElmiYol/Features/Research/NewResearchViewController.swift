@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import FirebaseAuth
 
 final class NewResearchViewController: UIViewController {
 
@@ -67,7 +68,8 @@ final class NewResearchViewController: UIViewController {
 
     private let createButton = BaseButton(title: "Tədqiqatı əlavə et", style: .primary, showsArrow: true)
 
-    private let supervisorOptions = ["Prof. Dr. İlqar Məmmədov", "Prof. Dr. Aygün Əliyeva"]
+    private var supervisors: [PublicProfile] = []
+    private var supervisorOptions: [String] { supervisors.map(\.fullName) }
     private let categoryOptions = ["Süni intellekt", "Kibertəhlükəsizlik", "Data analitikası", "Mobil tətbiqlər", "Digər"]
 
     private var didNavigate = false
@@ -79,6 +81,7 @@ final class NewResearchViewController: UIViewController {
         setupConstraints()
         setupValidators()
         setupActions()
+        loadSupervisors()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -156,6 +159,20 @@ final class NewResearchViewController: UIViewController {
         }
     }
 
+    private func loadSupervisors() {
+        Task {
+            let list = try? await FirestoreDirectoryRepository.shared.supervisors(universityId: nil)
+            supervisors = list ?? []
+        }
+    }
+
+    private static func parse(_ date: String) -> Date? {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "dd.MM.yyyy"
+        return f.date(from: date.trimmingCharacters(in: .whitespaces))
+    }
+    
     private func setupValidators() {
         titleField.setValidator(.required(fieldName: "Tədqiqatın adı"))
         startDateField.setValidator(.required(fieldName: "Başlama tarixi"))
@@ -204,25 +221,55 @@ final class NewResearchViewController: UIViewController {
         guard isTitleValid, isStartValid, isEndValid, isDescriptionValid,
               isSupervisorValid, isCategoryValid else { return }
 
+        guard let supervisor = supervisors.first(where: { $0.fullName == supervisorField.selectedValue }),
+              let me = Auth.auth().currentUser?.uid else { return }
+
+        guard let start = Self.parse(startDateField.value),
+              let end = Self.parse(endDateField.value), end >= start else {
+            presentAuthMessage("Tarixləri GG.AA.YYYY formatında yazın. Bitmə tarixi başlama tarixindən əvvəl ola bilməz.")
+            return
+        }
+
         guard !didNavigate else { return }
         didNavigate = true
+        createButton.isEnabled = false
 
-        NotificationStore.shared.add(
-            kind: .research,
-            title: "Yeni tədqiqat əlavə edildi",
-            message: "\(titleField.value) tədqiqatı yaradıldı",
-            meta: titleField.value,
-            person: supervisorField.selectedValue ?? ""
-        )
-        
-        let alert = UIAlertController(
-            title: "Tədqiqat əlavə edildi",
-            message: "Yeni tədqiqat sorğunuz qeydə alındı.",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "Tamam", style: .default) { [weak self] _ in
-            self?.navigationController?.popViewControllerWithFade()
-        })
-        present(alert, animated: true)
+        let myName = UserSession.shared.displayFullName
+        let research = Research(
+            id: UUID().uuidString,
+            title: titleField.value,
+            category: categoryField.selectedValue ?? "",
+            details: descriptionField.value,
+            studentUid: me, studentName: myName,
+            supervisorUid: supervisor.id, supervisorName: supervisor.fullName,
+            startDate: start, endDate: end,
+            status: "active", progress: 0, createdBy: me)
+
+        Task {
+            do {
+                try await PlannerRepository.shared.save(research)
+
+                NotificationStore.shared.add(
+                    kind: .research, title: "Yeni tədqiqat əlavə edildi",
+                    message: "\(research.title) tədqiqatı yaradıldı",
+                    meta: research.title, person: supervisor.fullName)
+                await PlannerRepository.shared.notify(
+                    uid: supervisor.id, kind: .research, title: "Yeni tədqiqat",
+                    message: "\(myName) yeni tədqiqat əlavə etdi",
+                    meta: research.title, person: myName)
+
+                let alert = UIAlertController(title: "Tədqiqat əlavə olundu",
+                                              message: "Tədqiqat uğurla yaradıldı.",
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Tamam", style: .default) { _ in
+                    self.navigationController?.popViewControllerWithFade()
+                })
+                present(alert, animated: true)
+            } catch {
+                didNavigate = false
+                createButton.isEnabled = true
+                presentAuthMessage("Tədqiqat əlavə olunmadı. İnterneti və icazələri yoxlayın.")
+            }
+        }
     }
 }

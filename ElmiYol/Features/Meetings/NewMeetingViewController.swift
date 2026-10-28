@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import FirebaseAuth
 
 final class NewMeetingViewController: UIViewController {
 
@@ -69,7 +70,8 @@ final class NewMeetingViewController: UIViewController {
 
     private let createButton = BaseButton(title: "Görüşü yarat", style: .primary, showsArrow: true)
 
-    private let personOptions = ["Prof. Dr. İlqar Məmmədov", "Prof. Dr. Aygün Əliyeva", "Əsli Namazova", "Rəşad Hüseynli", "Nigar Əliyeva"]
+    private var contacts: [PublicProfile] = []
+    private var personOptions: [String] { contacts.map(\.fullName) }
     private let modeOptions = ["Online (Zoom)", "Online (Google Meet)", "Online (Microsoft Teams)", "Offline (Universitet)"]
 
     private var didNavigate = false
@@ -81,6 +83,7 @@ final class NewMeetingViewController: UIViewController {
         setupConstraints()
         setupValidators()
         setupActions()
+        loadContacts()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -158,6 +161,24 @@ final class NewMeetingViewController: UIViewController {
         }
     }
 
+    private func loadContacts() {
+        Task {
+            let isSupervisor = UserSession.shared.currentRole == .supervisor
+            let list = isSupervisor
+                ? try? await FirestoreDirectoryRepository.shared.students(universityId: nil)
+                : try? await FirestoreDirectoryRepository.shared.supervisors(universityId: nil)
+            let me = Auth.auth().currentUser?.uid
+            contacts = (list ?? []).filter { $0.id != me }
+        }
+    }
+
+    private static func parse(_ date: String, _ time: String) -> Date? {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "dd.MM.yyyy HH:mm"
+        return f.date(from: "\(date.trimmingCharacters(in: .whitespaces)) \(time.trimmingCharacters(in: .whitespaces))")
+    }
+    
     private func setupValidators() {
         titleField.setValidator(.required(fieldName: "Görüşün adı"))
         dateField.setValidator(.required(fieldName: "Tarix"))
@@ -198,7 +219,6 @@ final class NewMeetingViewController: UIViewController {
         let isStartValid = startTimeField.validate()
         let isEndValid = endTimeField.validate()
         let isLocationValid = locationField.validate()
-
         let isPersonValid = personField.isValidValue
         let isModeValid = modeField.isValidValue
 
@@ -208,24 +228,60 @@ final class NewMeetingViewController: UIViewController {
         guard isTitleValid, isDateValid, isStartValid, isEndValid, isLocationValid,
               isPersonValid, isModeValid else { return }
 
+        guard let contact = contacts.first(where: { $0.fullName == personField.selectedValue }),
+              let me = Auth.auth().currentUser?.uid else { return }
+
+        guard let start = Self.parse(dateField.value, startTimeField.value),
+              let end = Self.parse(dateField.value, endTimeField.value), end > start else {
+            presentAuthMessage("Tarix (GG.AA.YYYY) və vaxt (məs. 14:00) formatını yoxlayın. Bitmə vaxtı başlama vaxtından sonra olmalıdır.")
+            return
+        }
+
         guard !didNavigate else { return }
         didNavigate = true
+        createButton.isEnabled = false
 
-        NotificationStore.shared.add(
-            kind: .meeting,
-            title: "Yeni görüş yaradıldı",
-            message: "\(titleField.value) görüşü planlaşdırıldı",
-            meta: titleField.value,
-            person: personField.selectedValue ?? ""
-        )
-        let alert = UIAlertController(
-            title: "Görüş yaradıldı",
-            message: "Yeni görüş uğurla planlaşdırıldı.",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "Tamam", style: .default) { [weak self] _ in
-            self?.navigationController?.popViewControllerWithFade()
-        })
-        present(alert, animated: true)
+        let isStudent = UserSession.shared.currentRole != .supervisor
+        let myName = UserSession.shared.displayFullName
+        let meeting = Meeting(
+            id: UUID().uuidString,
+            title: titleField.value,
+            studentUid: isStudent ? me : contact.id,
+            studentName: isStudent ? myName : contact.fullName,
+            supervisorUid: isStudent ? contact.id : me,
+            supervisorName: isStudent ? contact.fullName : myName,
+            startsAt: start, endsAt: end,
+            mode: modeField.selectedValue ?? "",
+            location: locationField.value,
+            note: noteField.value,
+            status: "pending",
+            createdBy: me)
+
+        Task {
+            do {
+                try await PlannerRepository.shared.save(meeting)
+
+                NotificationStore.shared.add(
+                    kind: .meeting, title: "Yeni görüş yaradıldı",
+                    message: "\(meeting.title) görüşü planlaşdırıldı",
+                    meta: meeting.title, person: contact.fullName)
+                await PlannerRepository.shared.notify(
+                    uid: contact.id, kind: .meeting, title: "Yeni görüş",
+                    message: "\(myName) sizinlə görüş planlaşdırdı",
+                    meta: meeting.title, person: myName)
+
+                let alert = UIAlertController(title: "Görüş yaradıldı",
+                                              message: "Yeni görüş uğurla planlaşdırıldı.",
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Tamam", style: .default) { _ in
+                    self.navigationController?.popViewControllerWithFade()
+                })
+                present(alert, animated: true)
+            } catch {
+                didNavigate = false
+                createButton.isEnabled = true
+                presentAuthMessage("Görüş yaradılmadı. İnterneti və icazələri yoxlayın.")
+            }
+        }
     }
 }

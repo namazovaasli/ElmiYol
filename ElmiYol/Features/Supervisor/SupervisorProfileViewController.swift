@@ -131,109 +131,16 @@ final class SupervisorProfileViewController: UIViewController {
         }
     }
 
+    private lazy var photoCoordinator = ProfilePhotoCoordinator(presenter: self)
+
     private func makeProfileCard() -> UIView {
-        let card = UIView()
-        card.backgroundColor = .white
-        card.layer.cornerRadius = 20
-        card.layer.shadowColor = AppColors.cardShadow
-        card.layer.shadowOpacity = 0.04
-        card.layer.shadowOffset = CGSize(width: 0, height: 4)
-        card.layer.shadowRadius = 12
-
-        let avatarView = UIView()
-        avatarView.backgroundColor = UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
-        avatarView.layer.cornerRadius = 36
-        let avatarIcon = UIImageView(image: UIImage(named: "user_avatar"))
-        avatarIcon.tintColor = AppColors.primary
-        avatarView.addSubview(avatarIcon)
-        avatarIcon.snp.makeConstraints { $0.center.equalToSuperview(); $0.width.height.equalTo(28) }
-
-        let onlineDot = UIView()
-        onlineDot.backgroundColor = AppColors.green
-        onlineDot.layer.cornerRadius = 7
-        onlineDot.layer.borderWidth = 2
-        onlineDot.layer.borderColor = UIColor.white.cgColor
-        avatarView.addSubview(onlineDot)
-        onlineDot.snp.makeConstraints { make in
-            make.bottom.trailing.equalToSuperview()
-            make.width.height.equalTo(14)
-        }
-
-        let name = UserSession.shared.displayFullName.isEmpty ? "İstifadəçi" : UserSession.shared.displayFullName
-        let nameLabel = UILabel()
-        nameLabel.text = name
-        nameLabel.font = .systemFont(ofSize: 18, weight: .bold)
-        nameLabel.textColor = AppColors.textPrimary
-
-        let roleBadge = UILabel()
-        roleBadge.text = "  Elmi rəhbər  "
-        roleBadge.font = .systemFont(ofSize: 12, weight: .medium)
-        roleBadge.textColor = AppColors.primary
-        roleBadge.backgroundColor = UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
-        roleBadge.layer.cornerRadius = 10
-        roleBadge.clipsToBounds = true
-
-        let emailLabel = UILabel()
-        emailLabel.text = "✉ \(UserSession.shared.displayEmail)"
-        emailLabel.font = .systemFont(ofSize: 13)
-        emailLabel.textColor = AppColors.textSecondary
-        emailLabel.adjustsFontSizeToFitWidth = true
-        emailLabel.minimumScaleFactor = 0.8
-
-        let phoneLabel = UILabel()
-        phoneLabel.text = "📞 \(UserSession.shared.displayPhone)"
-        phoneLabel.font = .systemFont(ofSize: 13)
-        phoneLabel.textColor = AppColors.textSecondary
-
-        let editButton = UIButton(type: .system)
-        var config = UIButton.Configuration.plain()
-        config.image = UIImage(systemName: "pencil")
-        config.imagePlacement = .leading
-        config.imagePadding = 4
-        config.attributedTitle = AttributedString("Redaktə et", attributes: AttributeContainer([
-            .font: UIFont.systemFont(ofSize: 13, weight: .semibold)
-        ]))
-        config.baseForegroundColor = AppColors.primary
-        editButton.configuration = config
-        editButton.addAction(UIAction { [weak self] _ in
-            self?.handleEditProfileTap()
-        }, for: .touchUpInside)
-        
-        card.addSubview(avatarView)
-        card.addSubview(nameLabel)
-        card.addSubview(roleBadge)
-        card.addSubview(emailLabel)
-        card.addSubview(phoneLabel)
-        card.addSubview(editButton)
-        
-        avatarView.snp.makeConstraints { make in
-            make.top.leading.equalToSuperview().offset(20)
-            make.width.height.equalTo(72)
-        }
-        editButton.snp.makeConstraints { make in
-            make.top.trailing.equalToSuperview().inset(20)
-        }
-        nameLabel.snp.makeConstraints { make in
-            make.top.equalTo(avatarView).offset(8)
-            make.leading.equalTo(avatarView.snp.trailing).offset(16)
-            make.trailing.lessThanOrEqualTo(editButton.snp.leading).offset(-8)
-        }
-        roleBadge.snp.makeConstraints { make in
-            make.top.equalTo(nameLabel.snp.bottom).offset(6)
-            make.leading.equalTo(nameLabel)
-            make.height.equalTo(24)
-        }
-        emailLabel.snp.makeConstraints { make in
-            make.top.equalTo(avatarView.snp.bottom).offset(16)
-            make.leading.trailing.equalToSuperview().inset(20)
-        }
-        phoneLabel.snp.makeConstraints { make in
-            make.top.equalTo(emailLabel.snp.bottom).offset(6)
-            make.leading.trailing.equalToSuperview().inset(20)
-            make.bottom.equalToSuperview().offset(-20)
-        }
-        return card
+        ProfileCardFactory.make(
+            roleTitle: "Elmi rəhbər",
+            onEdit: { [weak self] in self?.handleEditProfileTap() },
+            onPhoto: { [weak self] source in self?.photoCoordinator.showOptions(sourceView: source) }
+        )
     }
+    
     private func handleEditProfileTap() {
         let alert = UIAlertController(
             title: "Profil redaktəsi",

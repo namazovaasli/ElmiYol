@@ -22,7 +22,10 @@ struct ChatMessageDoc: Identifiable, Equatable {
     let filePath: String?
     let fileName: String?
     let createdAt: Date
-
+    let edited: Bool
+    let deleted: Bool
+    let hiddenFor: [String]
+    
     var isMine: Bool { senderId == Auth.auth().currentUser?.uid }
 
     var timeText: String {
@@ -41,6 +44,9 @@ struct ChatMessageDoc: Identifiable, Equatable {
         filePath = d["filePath"] as? String
         fileName = d["fileName"] as? String
         createdAt = (d["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+        edited = d["edited"] as? Bool ?? false
+        deleted = d["deleted"] as? Bool ?? false
+        hiddenFor = d["hiddenFor"] as? [String] ?? []
     }
 }
 

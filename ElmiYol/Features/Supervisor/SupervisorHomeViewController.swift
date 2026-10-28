@@ -86,7 +86,7 @@ final class SupervisorHomeViewController: UIViewController {
 
     private let notificationBadgeLabel: UILabel = {
         let label = UILabel()
-        label.text = "3"
+        label.text = "0"
         label.font = .systemFont(ofSize: 11, weight: .bold)
         label.textColor = .white
         label.textAlignment = .center
@@ -110,10 +110,7 @@ final class SupervisorHomeViewController: UIViewController {
 
     private let avatarImageView: UIImageView = {
         let iv = UIImageView()
-        iv.image = UIImage(named: "user_avatar")
-        iv.contentMode = .scaleAspectFill
-        iv.clipsToBounds = true
-        iv.backgroundColor = UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
+        iv.applyAvatarPlaceholder()
         return iv
     }()
 
@@ -172,7 +169,7 @@ final class SupervisorHomeViewController: UIViewController {
         iconSystemName: "person.2.fill",
         iconTint: UIColor(red: 0.2, green: 0.42, blue: 0.95, alpha: 1),
         iconBackground: .white,
-        value: "7",
+        value: "0",
         caption: "Tələbələrim"
     )
 
@@ -180,7 +177,7 @@ final class SupervisorHomeViewController: UIViewController {
         iconSystemName: "calendar",
         iconTint: AppColors.green,
         iconBackground: UIColor(red: 0.24, green: 0.68, blue: 0.48, alpha: 1),
-        value: "3",
+        value: "0",
         caption: "Aktiv tədqiqatlar"
     )
 
@@ -188,7 +185,7 @@ final class SupervisorHomeViewController: UIViewController {
         iconSystemName: "bubble.left.fill",
         iconTint: UIColor(red: 0.5, green: 0.3, blue: 0.85, alpha: 1),
         iconBackground: UIColor(red: 0.58, green: 0.4, blue: 0.9, alpha: 1),
-        value: "5",
+        value: "0",
         caption: "Görüşlər"
     )
 
@@ -196,7 +193,7 @@ final class SupervisorHomeViewController: UIViewController {
         iconSystemName: "bell.fill",
         iconTint: UIColor(red: 0.9, green: 0.6, blue: 0.15, alpha: 1),
         iconBackground: UIColor(red: 0.95, green: 0.68, blue: 0.25, alpha: 1),
-        value: "2",
+        value: "0",
         caption: "Yeni bildiriş"
     )
 
@@ -282,32 +279,7 @@ final class SupervisorHomeViewController: UIViewController {
 
     private lazy var meetingsSectionHeaderView = SectionHeaderView(title: "Yaxın görüşlər")
 
-    private lazy var advisorMeetingRow = SupervisorMeetingRowView(
-        dateDay: "23",
-        dateMonth: "May",
-        dateYear: "2025",
-        titleText: "Rəhbərlik görüşü",
-        personText: "Əsli Namazova",
-        timeText: "14:00",
-        modeText: "Online (Zoom)",
-        badgeText: "Sabah",
-        badgeTint: AppColors.primary,
-        badgeBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
-    )
-
-    private lazy var planMeetingRow = SupervisorMeetingRowView(
-        dateDay: "27",
-        dateMonth: "May",
-        dateYear: "2025",
-        titleText: "Tədqiqat planı müzakirəsi",
-        personText: "Nigar Əliyeva",
-        timeText: "11:00",
-        modeText: "Online (Google Meet)",
-        badgeText: "3 gün sonra",
-        badgeTint: AppColors.green,
-        badgeBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1)
-    )
-
+    
     private let meetingsStackView: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -327,31 +299,6 @@ final class SupervisorHomeViewController: UIViewController {
 
     private lazy var researchSectionHeaderView = SectionHeaderView(title: "Aktiv tədqiqatlarım")
 
-    private lazy var aiResearchRow = SupervisorResearchRowView(
-        iconSystemName: "doc.text.fill",
-        iconTint: AppColors.green,
-        iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
-        titleText: "Süni intellektin təhsildə tətbiqi imkanları",
-        personText: "Əsli Namazova",
-        progress: 0.65
-    )
-
-    private lazy var securityResearchRow = SupervisorResearchRowView(
-        iconSystemName: "chart.xyaxis.line",
-        iconTint: UIColor(red: 0.55, green: 0.35, blue: 0.85, alpha: 1),
-        iconBackground: UIColor(red: 0.93, green: 0.9, blue: 1, alpha: 1),
-        titleText: "Mobil tətbiqlərdə təhlükəsizlik yanaşmaları",
-        personText: "Reşad Hüseynli",
-        progress: 0.40
-    )
-
-    private let researchStackView: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .vertical
-        return stack
-    }()
-
-
     private let notificationsCardView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -365,21 +312,6 @@ final class SupervisorHomeViewController: UIViewController {
 
     private lazy var notificationsSectionHeaderView = SectionHeaderView(title: "Son bildirişlər")
 
-    private lazy var documentNotificationRow = NotificationRowView(
-        iconSystemName: "bell.fill",
-        iconTint: UIColor(red: 0.55, green: 0.35, blue: 0.85, alpha: 1),
-        iconBackground: UIColor(red: 0.93, green: 0.9, blue: 1, alpha: 1),
-        messageText: "Əsli Namazova tərəfindən yeni sənəd əlavə edildi.",
-        timeText: "2 saat əvvəl"
-    )
-
-    private lazy var messageNotificationRow = NotificationRowView(
-        iconSystemName: "bubble.left.fill",
-        iconTint: AppColors.green,
-        iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
-        messageText: "Nigar Əliyeva sizə mesaj göndərdi.",
-        timeText: "5 saat əvvəl"
-    )
 
     private let notificationsStackView: UIStackView = {
         let stack = UIStackView()
@@ -395,13 +327,31 @@ final class SupervisorHomeViewController: UIViewController {
         setupView()
         setupConstraints()
         setupActions()
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleNotificationsChanged),
+            name: NotificationStore.didChange, object: nil)
+        updateNotificationCounts()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         didNavigate = false
         updateGreeting()
+       
+        updateNotificationCounts()
+        avatarImageView.refreshAvatar()
     }
+    
+    @objc private func handleNotificationsChanged() {
+        updateNotificationCounts()
+    }
+
+    private func updateNotificationCounts() {
+        let count = NotificationStore.shared.unreadCount
+        notificationBadgeLabel.text = count > 99 ? "99+" : "\(count)"
+        notificationBadgeView.isHidden = count == 0
+    }
+    
     private func updateGreeting() {
         let firstName = UserSession.shared.displayFirstName
         greetingLabel.text = "Xoş gəldiniz, \(firstName)! 👋"
@@ -454,20 +404,15 @@ final class SupervisorHomeViewController: UIViewController {
 
         contentView.addSubview(meetingsCardView)
         meetingsCardView.addSubview(meetingsSectionHeaderView)
-        meetingsStackView.addArrangedSubview(advisorMeetingRow)
-        meetingsStackView.addArrangedSubview(planMeetingRow)
+       
         meetingsCardView.addSubview(meetingsStackView)
 
         contentView.addSubview(researchCardView)
         researchCardView.addSubview(researchSectionHeaderView)
-        researchStackView.addArrangedSubview(aiResearchRow)
-        researchStackView.addArrangedSubview(securityResearchRow)
-        researchCardView.addSubview(researchStackView)
 
         contentView.addSubview(notificationsCardView)
         notificationsCardView.addSubview(notificationsSectionHeaderView)
-        notificationsStackView.addArrangedSubview(documentNotificationRow)
-        notificationsStackView.addArrangedSubview(messageNotificationRow)
+        
         notificationsCardView.addSubview(notificationsStackView)
     }
 
@@ -609,14 +554,7 @@ final class SupervisorHomeViewController: UIViewController {
             make.leading.equalToSuperview().offset(24)
             make.trailing.equalToSuperview().offset(-24)
         }
-
-        researchStackView.snp.makeConstraints { make in
-            make.top.equalTo(researchSectionHeaderView.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(24)
-            make.trailing.equalToSuperview().offset(-24)
-            make.bottom.equalToSuperview().offset(-8)
-        }
-
+        
         notificationsCardView.snp.makeConstraints { make in
             make.top.equalTo(researchCardView.snp.bottom).offset(20)
             make.leading.equalToSuperview().offset(20)
@@ -665,14 +603,7 @@ final class SupervisorHomeViewController: UIViewController {
         messagesQuickView.onTap = { [weak self] in self?.selectTab(3) }
         reportsQuickView.onTap = { [weak self] in self?.selectTab(1) }
 
-        advisorMeetingRow.onTap = { [weak self] in self?.selectTab(2) }
-        planMeetingRow.onTap = { [weak self] in self?.selectTab(2) }
-
-        aiResearchRow.onTap = { [weak self] in self?.selectTab(1) }
-        securityResearchRow.onTap = { [weak self] in self?.selectTab(1) }
-
-        documentNotificationRow.onTap = { [weak self] in self?.selectTab(3) }
-        messageNotificationRow.onTap = { [weak self] in self?.selectTab(3) }
+        
     }
 
     private func handleMenuTap() {
@@ -712,6 +643,7 @@ private final class StatItemView: UIView {
         label.numberOfLines = 0
         return label
     }()
+    func setValue(_ text: String) { valueLabel.text = text }
 
     init(iconSystemName: String, iconTint: UIColor, iconBackground: UIColor, value: String, caption: String) {
         super.init(frame: .zero)

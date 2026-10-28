@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import SwiftUI
 
 final class ResearchDetailViewController: UIViewController {
 
@@ -289,8 +290,19 @@ final class ResearchDetailViewController: UIViewController {
     }
 
     private func handleMessageTap() {
-        tabBarController?.selectedIndex = NotificationsOrigin.messages.rawValue
-        navigationController?.popToRootViewController(animated: false)
+        guard !item.personUid.isEmpty else {
+            tabBarController?.selectedIndex = NotificationsOrigin.messages.rawValue
+            navigationController?.popViewControllerWithFade()
+            return
+        }
+        let chat = UIHostingController(rootView: ChatView(
+            otherUid: item.personUid,
+            otherName: item.personText,
+            subtitle: "Elmi rəhbər",
+            onBack: { [weak self] in self?.navigationController?.popViewControllerWithFade() }
+        ))
+        chat.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewControllerWithFade(chat)
     }
 
     private func configure() {
@@ -367,3 +379,4 @@ final class DetailInfoRow: UIView {
         valueLabel.text = value
     }
 }
+

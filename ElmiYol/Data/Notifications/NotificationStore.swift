@@ -34,6 +34,15 @@ final class NotificationStore {
     var unread: [AppNotification] {
         all().filter { !$0.isRead }.sorted { $0.createdAt > $1.createdAt }
     }
+    
+    var allItems: [AppNotification] {
+        all().sorted { $0.createdAt > $1.createdAt }
+    }
+
+    func deleteAllRead() {
+        save(all().filter { !$0.isRead })
+    }
+    
     var unreadCount: Int { all().filter { !$0.isRead }.count }
 
     func add(kind: AppNotification.Kind, title: String, message: String,

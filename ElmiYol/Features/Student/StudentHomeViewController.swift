@@ -85,7 +85,7 @@ final class StudentHomeViewController: UIViewController {
 
     private let notificationBadgeLabel: UILabel = {
         let label = UILabel()
-        label.text = "3"
+        label.text = "0"
         label.font = .systemFont(ofSize: 11, weight: .bold)
         label.textColor = .white
         label.textAlignment = .center
@@ -109,10 +109,7 @@ final class StudentHomeViewController: UIViewController {
 
     private let avatarImageView: UIImageView = {
         let iv = UIImageView()
-        iv.image = UIImage(named: "user_avatar")
-        iv.contentMode = .scaleAspectFill
-        iv.clipsToBounds = true
-        iv.backgroundColor = UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
+        iv.applyAvatarPlaceholder()
         return iv
     }()
 
@@ -153,7 +150,7 @@ final class StudentHomeViewController: UIViewController {
         iconSystemName: "doc.text.fill",
         iconTint: UIColor(red: 0.2, green: 0.42, blue: 0.95, alpha: 1),
         iconBackground: .white,
-        value: "5",
+        value: "0",
         caption: "Aktiv tədqiqat"
     )
 
@@ -161,7 +158,7 @@ final class StudentHomeViewController: UIViewController {
         iconSystemName: "calendar",
         iconTint: AppColors.green,
         iconBackground: UIColor(red: 0.24, green: 0.68, blue: 0.48, alpha: 1),
-        value: "2",
+        value: "0",
         caption: "Görüş bu həftə"
     )
 
@@ -169,7 +166,7 @@ final class StudentHomeViewController: UIViewController {
         iconSystemName: "bell.fill",
         iconTint: UIColor(red: 0.5, green: 0.3, blue: 0.85, alpha: 1),
         iconBackground: UIColor(red: 0.58, green: 0.4, blue: 0.9, alpha: 1),
-        value: "3",
+        value: "0",
         caption: "Yeni bildiriş"
     )
 
@@ -256,31 +253,7 @@ final class StudentHomeViewController: UIViewController {
 
     private lazy var meetingsSectionHeaderView = SectionHeaderView(title: "Növbəti görüşlərim")
 
-    private lazy var advisorMeetingRow = MeetingRowView(
-        iconSystemName: "calendar",
-        iconTint: AppColors.primary,
-        iconBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1),
-        titleText: "Rəhbərlə görüş",
-        personText: "Prof. Dr. İlqar Məmmədov",
-        dateText: "23 May 2025",
-        timeText: "14:00",
-        badgeText: "Sabah",
-        badgeTint: AppColors.primary,
-        badgeBackground: UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
-    )
-
-    private lazy var planMeetingRow = MeetingRowView(
-        iconSystemName: "calendar",
-        iconTint: AppColors.green,
-        iconBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1),
-        titleText: "Tədqiqat planı müzakirəsi",
-        personText: "Prof. Dr. Aygün Əliyeva",
-        dateText: "27 May 2025",
-        timeText: "11:00",
-        badgeText: "3 gün sonra",
-        badgeTint: AppColors.green,
-        badgeBackground: UIColor(red: 0.9, green: 0.97, blue: 0.93, alpha: 1)
-    )
+   
 
     private let meetingsStackView: UIStackView = {
         let stack = UIStackView()
@@ -302,11 +275,12 @@ final class StudentHomeViewController: UIViewController {
 
     private lazy var researchSectionHeaderView = SectionHeaderView(title: "Aktiv tədqiqatlarım")
 
-    private lazy var researchProgressRow = ResearchProgressRowView(
-        iconSystemName: "book.fill",
-        titleText: "Süni intellektin təhsildə tətbiqi imkanları",
-        progress: 0.65
-    )
+    private let researchStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 16
+        return stack
+    }()
 
     private var didNavigate = false
 
@@ -316,14 +290,136 @@ final class StudentHomeViewController: UIViewController {
         setupView()
         setupConstraints()
         setupActions()
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handlePlannerChanged),
+            name: .plannerChanged, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleNotificationsChanged),
+            name: NotificationStore.didChange, object: nil)
+        reloadFromPlanner()
+        updateNotificationCounts()
     }
-
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         didNavigate = false
         updateGreeting()
+        reloadFromPlanner()
+        updateNotificationCounts()
+        avatarImageView.refreshAvatar()
+    }
+    @objc private func handlePlannerChanged() {
+        reloadFromPlanner()
+    }
+
+    @objc private func handleNotificationsChanged() {
+        updateNotificationCounts()
     }
     
+    private func updateNotificationCounts() {
+        let count = NotificationStore.shared.unreadCount
+        notificationBadgeLabel.text = count > 99 ? "99+" : "\(count)"
+        notificationBadgeView.isHidden = count == 0
+        statNotificationView.setValue("\(count)")
+    }
+
+    private func reloadFromPlanner() {
+        let store = PlannerStore.shared
+        let me = store.myUid
+
+        statResearchView.setValue("\(store.activeResearches.count)")
+        statMeetingView.setValue("\(store.meetingsThisWeekCount)")
+
+        meetingsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        let upcoming = Array(store.upcomingMeetings.prefix(2))
+        if upcoming.isEmpty {
+            meetingsStackView.addArrangedSubview(makeEmptyLabel("Planlaşdırılmış görüş yoxdur"))
+        }
+        for meeting in upcoming {
+            let row = MeetingRowView(
+                iconSystemName: "calendar",
+                iconTint: AppColors.primary,
+                iconBackground: AppColors.tintBlue,
+                titleText: meeting.title,
+                personText: meeting.otherName(for: me),
+                dateText: Self.dateText(meeting.startsAt),
+                timeText: Self.timeText(meeting.startsAt),
+                badgeText: Self.relativeBadge(meeting.startsAt),
+                badgeTint: AppColors.primary,
+                badgeBackground: AppColors.tintBlue
+            )
+            row.onTap = { [weak self] in self?.openMeeting(meeting) }
+            meetingsStackView.addArrangedSubview(row)
+        }
+
+        researchStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        let active = Array(store.activeResearches.prefix(2))
+        if active.isEmpty {
+            researchStackView.addArrangedSubview(makeEmptyLabel("Aktiv tədqiqat yoxdur"))
+        }
+        for research in active {
+            researchStackView.addArrangedSubview(
+                ResearchProgressRowView(iconSystemName: "book.fill", titleText: research.title, progress: research.progress))
+        }
+    }
+
+    private func openMeeting(_ meeting: Meeting) {
+        guard !didNavigate else { return }
+        didNavigate = true
+        let status: String
+        switch meeting.status {
+        case "confirmed": status = "Təsdiqləndi"
+        case "cancelled": status = "Ləğv edilib"
+        default: status = "Gözləyir"
+        }
+        let data = MeetingDetailData(
+            titleText: meeting.title,
+            personText: meeting.otherName(for: PlannerStore.shared.myUid),
+            dateText: Self.dateText(meeting.startsAt),
+            timeText: "\(Self.timeText(meeting.startsAt)) – \(Self.timeText(meeting.endsAt))",
+            modeText: meeting.mode,
+            statusText: status,
+            statusTint: AppColors.primary,
+            statusBackground: AppColors.tintBlue
+        )
+        let detailVC = MeetingDetailViewController(data: data)
+        detailVC.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewControllerWithFade(detailVC)
+    }
+
+    private func makeEmptyLabel(_ text: String) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = .systemFont(ofSize: 14)
+        label.textColor = AppColors.textMuted
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
+    }
+
+    private static func dateText(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "az")
+        f.dateFormat = "d MMM yyyy"
+        return f.string(from: date)
+    }
+
+    private static func timeText(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        return f.string(from: date)
+    }
+
+    private static func relativeBadge(_ date: Date) -> String {
+        let calendar = Calendar.current
+        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: Date()),
+                                           to: calendar.startOfDay(for: date)).day ?? 0
+        switch days {
+        case ...0: return "Bu gün"
+        case 1: return "Sabah"
+        default: return "\(days) gün sonra"
+        }
+    }
     private func updateGreeting() {
         let firstName = UserSession.shared.displayFirstName
         greetingLabel.text = "Xoş gəldin, \(firstName)! 👋"
@@ -374,14 +470,11 @@ final class StudentHomeViewController: UIViewController {
 
         contentView.addSubview(meetingsCardView)
         meetingsCardView.addSubview(meetingsSectionHeaderView)
-
-        meetingsStackView.addArrangedSubview(advisorMeetingRow)
-        meetingsStackView.addArrangedSubview(planMeetingRow)
         meetingsCardView.addSubview(meetingsStackView)
 
         contentView.addSubview(researchCardView)
         researchCardView.addSubview(researchSectionHeaderView)
-        researchCardView.addSubview(researchProgressRow)
+        researchCardView.addSubview(researchStackView)
     }
 
     private func setupConstraints() {
@@ -525,7 +618,7 @@ final class StudentHomeViewController: UIViewController {
             make.trailing.equalToSuperview().offset(-24)
         }
 
-        researchProgressRow.snp.makeConstraints { make in
+        researchStackView.snp.makeConstraints { make in
             make.top.equalTo(researchSectionHeaderView.snp.bottom).offset(16)
             make.leading.equalToSuperview().offset(24)
             make.trailing.equalToSuperview().offset(-24)
@@ -560,17 +653,6 @@ final class StudentHomeViewController: UIViewController {
             self?.selectTab(3)
         }
         newResearchQuickView.onTap = { [weak self] in
-            self?.selectTab(1)
-        }
-
-        advisorMeetingRow.onTap = { [weak self] in
-            self?.selectTab(2)
-        }
-        planMeetingRow.onTap = { [weak self] in
-            self?.selectTab(2)
-        }
-
-        researchProgressRow.onTap = { [weak self] in
             self?.selectTab(1)
         }
     }
@@ -612,6 +694,8 @@ private final class StatItemView: UIView {
         return label
     }()
 
+    func setValue(_ text: String) { valueLabel.text = text }
+    
     init(iconSystemName: String, iconTint: UIColor, iconBackground: UIColor, value: String, caption: String) {
         super.init(frame: .zero)
 
@@ -1012,7 +1096,6 @@ private final class ResearchProgressRowView: UIView {
     }()
 
     private let progressValue: CGFloat
-
     init(iconSystemName: String, titleText: String, progress: CGFloat) {
         self.progressValue = progress
         super.init(frame: .zero)

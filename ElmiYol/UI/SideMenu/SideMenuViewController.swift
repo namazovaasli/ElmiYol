@@ -164,10 +164,7 @@ final class SideMenuViewController: UIViewController {
 
     private let avatarImageView: UIImageView = {
         let iv = UIImageView()
-        iv.image = UIImage(named: "user_avatar")
-        iv.contentMode = .scaleAspectFill
-        iv.clipsToBounds = true
-        iv.backgroundColor = UIColor(red: 0.9, green: 0.94, blue: 1, alpha: 1)
+        iv.applyAvatarPlaceholder()
         return iv
     }()
 
@@ -290,6 +287,7 @@ final class SideMenuViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         animateIn()
+        avatarImageView.refreshAvatar()
     }
 
     private func setupView() {
